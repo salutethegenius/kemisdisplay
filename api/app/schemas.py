@@ -62,6 +62,10 @@ class MediaOut(BaseModel):
     duration_seconds: int | None
     size_bytes: int
     created_at: datetime
+    mux_asset_id: str | None = None
+    mux_playback_id: str | None = None
+    mux_status: str | None = None
+    thumbnail_url: str | None = None
 
     model_config = {"from_attributes": True}
 

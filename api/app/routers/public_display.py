@@ -28,6 +28,11 @@ def public_playlist(
         m = db.get(Media, it.media_id)
         if not m:
             continue
+        if m.type == "video":
+            if m.mux_status == "processing" or m.mux_status == "failed":
+                continue
+            if not (m.file_url or "").strip():
+                continue
         out_items.append(
             PublicPlaylistItem(
                 type=m.type,

@@ -12,6 +12,7 @@ from app.deps import get_current_user
 from app.models import Media, User
 from app.schemas import MediaOut
 from app.services.limits import billing_allows_write, max_storage_bytes_for, sum_user_media_bytes
+from app.services.mux_video import delete_mux_asset, ingest_local_video_file
 from app.services.video_probe import probe_video_duration_seconds
 
 router = APIRouter()
@@ -70,17 +71,62 @@ async def upload_media(
     user_dir.mkdir(parents=True, exist_ok=True)
     disk_name = f"{uid}{ext}"
     path = user_dir / disk_name
-    path.write_bytes(data)
 
     duration: int | None = None
     if kind == "video":
+        if settings.mux_enabled:
+            path.write_bytes(data)
+            dur_f = probe_video_duration_seconds(path)
+            if dur_f is not None:
+                duration = int(round(dur_f))
+            media = Media(
+                user_id=user.id,
+                filename=file.filename,
+                file_url="",
+                type=kind,
+                duration_seconds=duration,
+                size_bytes=size,
+                mux_status="processing",
+            )
+            db.add(media)
+            db.flush()
+            try:
+                ingest_local_video_file(path, media.id)
+            except Exception:
+                db.rollback()
+                path.unlink(missing_ok=True)
+                raise HTTPException(
+                    status.HTTP_502_BAD_GATEWAY,
+                    "Video upload to Mux failed. Check server logs and Mux credentials.",
+                )
+            path.unlink(missing_ok=True)
+            db.commit()
+            db.refresh(media)
+            return MediaOut.model_validate(media)
+
+        path.write_bytes(data)
         dur_f = probe_video_duration_seconds(path)
         if dur_f is not None:
             duration = int(round(dur_f))
+        base = settings.public_api_base_url.rstrip("/")
+        public_url = f"{base}/files/{user.id}/{disk_name}"
+        media = Media(
+            user_id=user.id,
+            filename=file.filename,
+            file_url=public_url,
+            type=kind,
+            duration_seconds=duration,
+            size_bytes=size,
+        )
+        db.add(media)
+        db.commit()
+        db.refresh(media)
+        return MediaOut.model_validate(media)
 
+    # image (always disk)
+    path.write_bytes(data)
     base = settings.public_api_base_url.rstrip("/")
     public_url = f"{base}/files/{user.id}/{disk_name}"
-
     media = Media(
         user_id=user.id,
         filename=file.filename,
@@ -104,12 +150,14 @@ def delete_media(
     media = db.get(Media, media_id)
     if not media or media.user_id != user.id:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Media not found")
-    # remove file from disk
-    try:
-        suffix = Path(media.file_url).name
-        path = Path(settings.upload_dir) / str(user.id) / suffix
-        path.unlink(missing_ok=True)
-    except OSError:
-        pass
+    if media.mux_asset_id:
+        delete_mux_asset(media.mux_asset_id)
+    else:
+        try:
+            suffix = Path(media.file_url).name
+            path = Path(settings.upload_dir) / str(user.id) / suffix
+            path.unlink(missing_ok=True)
+        except OSError:
+            pass
     db.delete(media)
     db.commit()

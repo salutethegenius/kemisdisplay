@@ -148,6 +148,11 @@ class Media(Base):
     type: Mapped[str] = mapped_column(String(16))  # image | video
     duration_seconds: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     size_bytes: Mapped[int] = mapped_column(Integer, default=0)
+    mux_asset_id: Mapped[Optional[str]] = mapped_column(String(128), nullable=True)
+    mux_playback_id: Mapped[Optional[str]] = mapped_column(String(128), nullable=True)
+    # processing | ready | failed; null = legacy rows (treat as ready for playlists).
+    mux_status: Mapped[Optional[str]] = mapped_column(String(32), nullable=True)
+    thumbnail_url: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=_utcnow
     )

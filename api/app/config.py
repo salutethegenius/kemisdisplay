@@ -24,6 +24,11 @@ class Settings(BaseSettings):
     dev_bypass_billing: bool = False
     # Comma-separated emails that receive is_admin=true on API startup (existing users only).
     admin_emails: str = ""
+    # Mux Video (optional). When token id+secret are set, new videos use Mux direct upload + webhooks.
+    mux_token_id: str = ""
+    mux_token_secret: str = ""
+    # Webhook signing secret from Mux dashboard (required to verify POST /mux/webhook).
+    mux_webhook_signing_secret: str = ""
 
     @field_validator("database_url", mode="before")
     @classmethod
@@ -50,6 +55,10 @@ class Settings(BaseSettings):
             for e in self.admin_emails.split(",")
             if e.strip()
         ]
+
+    @property
+    def mux_enabled(self) -> bool:
+        return bool(self.mux_token_id.strip() and self.mux_token_secret.strip())
 
 
 settings = Settings()

@@ -25,16 +25,20 @@
 | `MENU_RENDER_TMP` | `/tmp/menu_render` | Ephemeral temp is fine. |
 | `DEV_BYPASS_BILLING` | `0` | Keep off in production. |
 | `ADMIN_EMAILS` | `you@domain.com` | Optional; promotes existing users to admin on boot. |
+| `MUX_TOKEN_ID` / `MUX_TOKEN_SECRET` | *(Mux dashboard → Access Tokens)* | Optional. When both are set, **new video uploads** and **menu-render MP4s** are sent to Mux (CDN + static `highest.mp4`). Images still use `UPLOAD_DIR` + `/files`. |
+| `MUX_WEBHOOK_SIGNING_SECRET` | *(Mux → Webhooks → endpoint signing secret)* | Required in production if you use Mux: the API verifies `POST /mux/webhook` with this secret. |
 
-4. **Disk / uploads:** Railway’s filesystem is ephemeral unless you add a **volume**. Mount e.g. `/data` and set `UPLOAD_DIR=/data/uploads` so media and menu MP4s persist.
+4. **Mux webhook URL:** In the Mux dashboard, add a webhook endpoint pointing to `https://<your-public-api-host>/mux/webhook` and subscribe at least to `video.asset.ready`, `video.asset.static_rendition.ready`, and `video.asset.errored`.
 
-5. **Migrations:** `api/railway.json` runs **`alembic upgrade head`** as `preDeployCommand` before each deploy.
+5. **Disk / uploads:** Railway’s filesystem is ephemeral unless you add a **volume**. Mount e.g. `/data` and set `UPLOAD_DIR=/data/uploads` so **images** and any **non-Mux** video persist. Mux-hosted video does not need disk for the MP4 itself.
 
-6. **Start command:** `uvicorn` binds `0.0.0.0` and **`PORT`** (Railway sets this). Defined in `api/railway.json`.
+6. **Migrations:** `api/railway.json` runs **`alembic upgrade head`** as `preDeployCommand` before each deploy.
 
-7. **Health check:** `GET /health` (configured in `railway.json`).
+7. **Start command:** `uvicorn` binds `0.0.0.0` and **`PORT`** (Railway sets this). Defined in `api/railway.json`.
 
-8. **Menu video rendering:** Needs **ffmpeg** (via `nixpacks.toml`) and optionally **Playwright + Chromium** (`pip` + `playwright install chromium` in a custom image or build step). Without Playwright, menu jobs fail with a clear error; the rest of the API still works.
+8. **Health check:** `GET /health` (configured in `railway.json`).
+
+9. **Menu video rendering:** Needs **ffmpeg** (via `nixpacks.toml`) and optionally **Playwright + Chromium** (`pip` + `playwright install chromium` in a custom image or build step). Without Playwright, menu jobs fail with a clear error; the rest of the API still works.
 
 ---
 

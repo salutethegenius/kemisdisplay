@@ -36,6 +36,8 @@ type MediaRow = {
   duration_seconds: number | null;
   size_bytes: number;
   created_at: string;
+  mux_status?: string | null;
+  thumbnail_url?: string | null;
 };
 
 function ScreenList() {
@@ -443,6 +445,12 @@ function PlaylistEditor({ id }: { id: string }) {
           <option value="">Add media…</option>
           {media
             .filter((m) => !used.has(m.id))
+            .filter(
+              (m) =>
+                m.type !== "video" ||
+                ((m.mux_status == null || m.mux_status === "ready") &&
+                  (m.file_url || "").trim().length > 0),
+            )
             .map((m) => (
               <option key={m.id} value={m.id}>
                 {m.filename} ({m.type})
@@ -543,6 +551,13 @@ function MediaLibrary() {
     void load();
   }, [load]);
 
+  useEffect(() => {
+    const needsPoll = items.some((m) => m.mux_status === "processing");
+    if (!needsPoll || !token) return;
+    const t = setInterval(() => void load(), 10_000);
+    return () => clearInterval(t);
+  }, [items, load, token]);
+
   async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
     if (!f || !token) return;
@@ -597,15 +612,31 @@ function MediaLibrary() {
               key={m.id}
               className="flex flex-col gap-3 rounded-xl border border-zinc-800 bg-zinc-900/50 p-4"
             >
-              <div className="min-w-0">
-                <p className="text-sm font-medium text-white">{m.filename}</p>
-                <p className="mt-1 text-xs text-zinc-500">
-                  {m.type}
-                  {m.duration_seconds != null
-                    ? ` · ${m.duration_seconds}s`
-                    : ""}{" "}
-                  · {(m.size_bytes / 1024 / 1024).toFixed(2)} MB
-                </p>
+              <div className="flex gap-3">
+                {m.thumbnail_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={m.thumbnail_url}
+                    alt=""
+                    className="h-16 w-28 shrink-0 rounded-md object-cover"
+                  />
+                ) : null}
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-white">{m.filename}</p>
+                  <p className="mt-1 text-xs text-zinc-500">
+                    {m.type}
+                    {m.mux_status === "processing" ? (
+                      <span className="text-amber-400"> · Processing…</span>
+                    ) : null}
+                    {m.mux_status === "failed" ? (
+                      <span className="text-red-400"> · Failed</span>
+                    ) : null}
+                    {m.duration_seconds != null
+                      ? ` · ${m.duration_seconds}s`
+                      : ""}{" "}
+                    · {(m.size_bytes / 1024 / 1024).toFixed(2)} MB
+                  </p>
+                </div>
               </div>
               <button
                 type="button"
@@ -622,6 +653,7 @@ function MediaLibrary() {
         <table className="w-full min-w-[560px] text-left text-sm">
           <thead className="border-b border-zinc-800 bg-zinc-900/80 text-xs uppercase tracking-wide text-zinc-500">
             <tr>
+              <th className="px-4 py-3">Preview</th>
               <th className="px-4 py-3">File</th>
               <th className="px-4 py-3">Type</th>
               <th className="px-4 py-3">Duration</th>
@@ -632,10 +664,30 @@ function MediaLibrary() {
           <tbody className="divide-y divide-zinc-800 text-zinc-300">
             {items.map((m) => (
               <tr key={m.id}>
+                <td className="px-4 py-3">
+                  {m.thumbnail_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={m.thumbnail_url}
+                      alt=""
+                      className="h-12 w-20 rounded object-cover"
+                    />
+                  ) : (
+                    <span className="text-zinc-600">—</span>
+                  )}
+                </td>
                 <td className="max-w-[200px] truncate px-4 py-3 text-white">
                   {m.filename}
                 </td>
-                <td className="px-4 py-3">{m.type}</td>
+                <td className="px-4 py-3">
+                  {m.type}
+                  {m.mux_status === "processing" ? (
+                    <span className="ml-1 text-amber-400">(processing)</span>
+                  ) : null}
+                  {m.mux_status === "failed" ? (
+                    <span className="ml-1 text-red-400">(failed)</span>
+                  ) : null}
+                </td>
                 <td className="px-4 py-3">
                   {m.duration_seconds != null ? `${m.duration_seconds}s` : "—"}
                 </td>

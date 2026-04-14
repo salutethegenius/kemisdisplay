@@ -68,6 +68,17 @@ def put_playlist(
         m = db.get(Media, mid)
         if not m or m.user_id != user.id:
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid media_id in playlist")
+        if m.type == "video":
+            if m.mux_status in ("processing", "failed"):
+                raise HTTPException(
+                    status.HTTP_400_BAD_REQUEST,
+                    "Video is still processing or failed in Mux; wait until it is ready before adding to a playlist.",
+                )
+            if not (m.file_url or "").strip():
+                raise HTTPException(
+                    status.HTTP_400_BAD_REQUEST,
+                    "Video has no playback URL yet; wait for processing to finish.",
+                )
 
     db.execute(delete(PlaylistItem).where(PlaylistItem.screen_id == screen_id))
     for row in body.items:

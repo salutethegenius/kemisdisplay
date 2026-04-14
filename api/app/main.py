@@ -11,7 +11,7 @@ from sqlalchemy.exc import OperationalError
 from app.config import settings
 from app.database import Base, SessionLocal, engine
 from app.models import User
-from app.routers import admin, auth, jobs, media, menus, playlist, public_display, screens
+from app.routers import admin, auth, jobs, media, menus, mux_webhook, playlist, public_display, screens
 
 logger = logging.getLogger("kemisdisplay")
 
@@ -38,6 +38,7 @@ app.include_router(public_display.router, prefix="/public", tags=["public"])
 app.include_router(admin.router, prefix="/admin", tags=["admin"])
 app.include_router(menus.router, prefix="/menus", tags=["menus"])
 app.include_router(jobs.router, prefix="/jobs", tags=["jobs"])
+app.include_router(mux_webhook.router, prefix="/mux", tags=["mux"])
 
 
 def bootstrap_admins() -> None:
