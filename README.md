@@ -61,6 +61,8 @@ npm install
 npm run dev
 ```
 
+`npm run dev` uses **Turbopack** (`next dev --turbo`) to avoid flaky webpack dev chunks (`Cannot find module './NNN.js'`). If the app still misbehaves after many edits, run **`npm run dev:clean`** (deletes `.next` then starts dev). Use **`npm run dev:webpack`** only if you need the classic webpack dev server.
+
 Open [http://localhost:3000](http://localhost:3000). Sign up, create a screen, upload media, build a playlist, then open the display URL on a TV browser.
 
 The dashboard is **mobile-first**: bottom navigation on small screens, sidebar from `md` up, and card layouts for media and admin where tables would be cramped.

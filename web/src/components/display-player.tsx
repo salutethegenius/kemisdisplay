@@ -8,12 +8,21 @@ type Item = { type: string; url: string; duration_seconds: number };
 const POLL_MS = 60_000;
 const LS_KEY = (slug: string) => `kemisdisplay_playlist_${slug}`;
 
+function clearPlaylistCache(slug: string) {
+  try {
+    localStorage.removeItem(LS_KEY(slug));
+  } catch {
+    /* ignore */
+  }
+}
+
 export function DisplayPlayer({ slug, token }: { slug: string; token: string }) {
   const [items, setItems] = useState<Item[]>([]);
   const [idx, setIdx] = useState(0);
   const [version, setVersion] = useState<string | null>(null);
   const [fade, setFade] = useState(true);
   const [err, setErr] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
@@ -22,15 +31,36 @@ export function DisplayPlayer({ slug, token }: { slug: string; token: string }) 
       apiUrl(`/public/screens/${encodeURIComponent(slug)}/playlist`),
     );
     u.searchParams.set("token", token);
-    const res = await fetch(u.toString());
-    if (!res.ok) {
-      setErr("Invalid display or token.");
+    let res: Response;
+    try {
+      res = await fetch(u.toString());
+    } catch {
+      setErr("Could not reach the API. Check NEXT_PUBLIC_API_URL and your network.");
+      setItems([]);
+      setVersion(null);
+      clearPlaylistCache(slug);
       return null;
     }
-    const data = (await res.json()) as {
-      playlist_version: string;
-      items: Item[];
-    };
+    if (!res.ok) {
+      setErr("Invalid display or token.");
+      setItems([]);
+      setVersion(null);
+      clearPlaylistCache(slug);
+      return null;
+    }
+    let data: { playlist_version: string; items: Item[] };
+    try {
+      data = (await res.json()) as {
+        playlist_version: string;
+        items: Item[];
+      };
+    } catch {
+      setErr("Invalid response from server.");
+      setItems([]);
+      setVersion(null);
+      clearPlaylistCache(slug);
+      return null;
+    }
     try {
       localStorage.setItem(
         LS_KEY(slug),
@@ -43,24 +73,15 @@ export function DisplayPlayer({ slug, token }: { slug: string; token: string }) 
   }, [slug, token]);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    try {
-      const raw = localStorage.getItem(LS_KEY(slug));
-      if (raw) {
-        const parsed = JSON.parse(raw) as { v: string; items: Item[] };
-        if (parsed.items?.length) {
-          setItems(parsed.items);
-          setVersion(parsed.v);
-        }
-      }
-    } catch {
-      /* ignore */
-    }
     void (async () => {
+      setLoading(true);
+      setErr(null);
       const data = await fetchPlaylist();
+      setLoading(false);
       if (data) {
         setVersion(data.playlist_version);
         setItems(data.items);
+        setIdx(0);
         setErr(null);
       }
     })();
@@ -113,6 +134,15 @@ export function DisplayPlayer({ slug, token }: { slug: string; token: string }) 
     }, 400);
   }, [items.length]);
 
+  const onMediaFailed = useCallback(() => {
+    setErr(
+      "Media failed to load (bad URL, missing file, or HTTPS). Fix PUBLIC_API_BASE_URL / file URLs, then refresh this page.",
+    );
+    setItems([]);
+    setIdx(0);
+    clearPlaylistCache(slug);
+  }, [slug]);
+
   useEffect(() => {
     if (timerRef.current) clearTimeout(timerRef.current);
     if (!item) return;
@@ -139,10 +169,22 @@ export function DisplayPlayer({ slug, token }: { slug: string; token: string }) 
     };
   }, [item, advance]);
 
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-black text-zinc-400">
+        Loading playlist…
+      </div>
+    );
+  }
+
   if (err && items.length === 0) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-black text-red-400">
-        {err}
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-black px-6 text-center">
+        <p className="text-red-400">{err}</p>
+        <p className="max-w-md text-sm text-zinc-500">
+          If you changed API or media URLs, clear site data for this origin and
+          reload. Stale playlist cache could point at old hosts.
+        </p>
       </div>
     );
   }
@@ -171,6 +213,7 @@ export function DisplayPlayer({ slug, token }: { slug: string; token: string }) 
             muted
             playsInline
             loop={false}
+            onError={onMediaFailed}
             onEnded={() => {
               if (timerRef.current) {
                 clearTimeout(timerRef.current);
@@ -186,6 +229,7 @@ export function DisplayPlayer({ slug, token }: { slug: string; token: string }) 
             src={item.url}
             alt=""
             className="h-full w-full object-contain"
+            onError={onMediaFailed}
           />
         )}
       </div>
