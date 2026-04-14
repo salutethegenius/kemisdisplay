@@ -1,0 +1,3 @@
+# Used when Railway builder is NIXPACKS. Prefer Nix ffmpeg over apt to avoid glibc clashes.
+[phases.setup]
+nixPkgs = ["...", "ffmpeg"]

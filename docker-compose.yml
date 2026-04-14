@@ -1,0 +1,14 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: kemis
+      POSTGRES_PASSWORD: kemis
+      POSTGRES_DB: kemisdisplay
+    ports:
+      - "5434:5432"
+    volumes:
+      - kemisdisplay_pg:/var/lib/postgresql/data
+
+volumes:
+  kemisdisplay_pg:
