@@ -153,6 +153,10 @@ class Media(Base):
     # processing | ready | failed; null = legacy rows (treat as ready for playlists).
     mux_status: Mapped[Optional[str]] = mapped_column(String(32), nullable=True)
     thumbnail_url: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    # r2 | mux | local | null (legacy)
+    storage_provider: Mapped[Optional[str]] = mapped_column(String(32), nullable=True)
+    r2_key: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    r2_thumbnail_key: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=_utcnow
     )

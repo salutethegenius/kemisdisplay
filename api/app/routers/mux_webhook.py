@@ -64,6 +64,8 @@ def _apply_asset_ready(db: Session, data: dict[str, Any]) -> None:
     media.thumbnail_url = f"https://image.mux.com/{playback_id}/thumbnail.jpg"
     if media.mux_status != "failed":
         media.mux_status = "processing"
+    if media.storage_provider is None:
+        media.storage_provider = "mux"
 
 
 def _apply_static_rendition_ready(db: Session, data: dict[str, Any]) -> None:
@@ -93,6 +95,8 @@ def _apply_static_rendition_ready(db: Session, data: dict[str, Any]) -> None:
     if not media.thumbnail_url:
         media.thumbnail_url = f"https://image.mux.com/{playback_id}/thumbnail.jpg"
     media.mux_status = "ready"
+    if media.storage_provider is None:
+        media.storage_provider = "mux"
 
 
 def _apply_asset_errored(db: Session, data: dict[str, Any]) -> None:
@@ -110,6 +114,8 @@ def _apply_asset_errored(db: Session, data: dict[str, Any]) -> None:
     if not media:
         return
     media.mux_status = "failed"
+    if media.storage_provider is None:
+        media.storage_provider = "mux"
 
 
 @router.post("/webhook")

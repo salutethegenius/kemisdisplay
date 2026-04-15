@@ -62,6 +62,7 @@ class MediaOut(BaseModel):
     duration_seconds: int | None
     size_bytes: int
     created_at: datetime
+    storage_provider: str | None = None
     mux_asset_id: str | None = None
     mux_playback_id: str | None = None
     mux_status: str | None = None

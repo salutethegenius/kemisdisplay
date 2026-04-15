@@ -12,8 +12,8 @@ from uuid import UUID
 from app.config import settings
 from app.models import Media, Menu, RenderJob
 from app.services.menu_html import build_chalkboard_html
-from app.services.mux_video import ingest_local_video_file
 from app.services.video_probe import probe_video_duration_seconds
+from app.services.video_router import process_video
 
 logger = logging.getLogger("kemisdisplay")
 
@@ -144,49 +144,43 @@ def run_menu_render_job(job_id: UUID) -> None:
         size = mp4_path.stat().st_size
         dur = probe_video_duration_seconds(mp4_path) or 30
 
-        if settings.mux_enabled:
-            media = Media(
-                user_id=job.user_id,
-                filename=f"menu-{menu.id}.mp4",
-                file_url="",
-                type="video",
-                duration_seconds=int(round(dur)),
-                size_bytes=size,
-                mux_status="processing",
-            )
-            db.add(media)
-            db.flush()
-            try:
-                ingest_local_video_file(mp4_path, media.id)
-            except Exception as e:
-                db.rollback()
-                job = db.get(RenderJob, job_id)
-                if job:
-                    job.status = "failed"
-                    job.error_message = (str(e) or "Mux ingest failed")[:2000]
-                    job.updated_at = datetime.now(timezone.utc)
-                    db.commit()
-                logger.error("menu render mux ingest: %s", e)
-                return
+        media_id = uuid_lib.uuid4()
+        media = Media(
+            id=media_id,
+            user_id=job.user_id,
+            filename=f"menu-{menu.id}.mp4",
+            file_url="",
+            type="video",
+            duration_seconds=int(round(dur)),
+            size_bytes=size,
+        )
+        db.add(media)
+        db.flush()
+        try:
+            result = process_video(mp4_path, media_id, job.user_id)
+        except Exception as e:
+            db.rollback()
+            job = db.get(RenderJob, job_id)
+            if job:
+                job.status = "failed"
+                job.error_message = (str(e) or "Video processing failed")[:2000]
+                job.updated_at = datetime.now(timezone.utc)
+                db.commit()
+            logger.error("menu render video processing: %s", e)
+            return
+
+        media.storage_provider = result.storage_provider
+        media.thumbnail_url = result.thumbnail_url
+        media.r2_key = result.r2_key
+        media.r2_thumbnail_key = result.r2_thumbnail_key
+        if result.storage_provider == "mux":
+            media.mux_status = "processing"
+            media.file_url = ""
         else:
-            uid = uuid_lib.uuid4()
-            disk_name = f"{uid}.mp4"
-            user_dir = Path(settings.upload_dir) / str(job.user_id)
-            user_dir.mkdir(parents=True, exist_ok=True)
-            dest = user_dir / disk_name
-            shutil.copy2(mp4_path, dest)
-            base = settings.public_api_base_url.rstrip("/")
-            public_url = f"{base}/files/{job.user_id}/{disk_name}"
-            media = Media(
-                user_id=job.user_id,
-                filename=f"menu-{menu.id}.mp4",
-                file_url=public_url,
-                type="video",
-                duration_seconds=int(round(dur)),
-                size_bytes=size,
-            )
-            db.add(media)
-            db.flush()
+            media.mux_status = None
+            media.file_url = result.file_url or ""
+        if result.duration_seconds is not None:
+            media.duration_seconds = result.duration_seconds
 
         job.media_id = media.id
         job.status = "succeeded"

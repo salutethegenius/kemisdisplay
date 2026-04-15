@@ -12,8 +12,8 @@ from app.deps import get_current_user
 from app.models import Media, User
 from app.schemas import MediaOut
 from app.services.limits import billing_allows_write, max_storage_bytes_for, sum_user_media_bytes
-from app.services.mux_video import delete_mux_asset, ingest_local_video_file
 from app.services.video_probe import probe_video_duration_seconds
+from app.services.video_router import delete_stored_video, process_video
 
 router = APIRouter()
 
@@ -74,51 +74,50 @@ async def upload_media(
 
     duration: int | None = None
     if kind == "video":
-        if settings.mux_enabled:
-            path.write_bytes(data)
-            dur_f = probe_video_duration_seconds(path)
-            if dur_f is not None:
-                duration = int(round(dur_f))
-            media = Media(
-                user_id=user.id,
-                filename=file.filename,
-                file_url="",
-                type=kind,
-                duration_seconds=duration,
-                size_bytes=size,
-                mux_status="processing",
-            )
-            db.add(media)
-            db.flush()
-            try:
-                ingest_local_video_file(path, media.id)
-            except Exception:
-                db.rollback()
-                path.unlink(missing_ok=True)
-                raise HTTPException(
-                    status.HTTP_502_BAD_GATEWAY,
-                    "Video upload to Mux failed. Check server logs and Mux credentials.",
-                )
-            path.unlink(missing_ok=True)
-            db.commit()
-            db.refresh(media)
-            return MediaOut.model_validate(media)
-
         path.write_bytes(data)
         dur_f = probe_video_duration_seconds(path)
         if dur_f is not None:
             duration = int(round(dur_f))
-        base = settings.public_api_base_url.rstrip("/")
-        public_url = f"{base}/files/{user.id}/{disk_name}"
+
         media = Media(
+            id=uid,
             user_id=user.id,
             filename=file.filename,
-            file_url=public_url,
+            file_url="",
             type=kind,
             duration_seconds=duration,
             size_bytes=size,
         )
         db.add(media)
+        db.flush()
+        try:
+            result = process_video(path, uid, user.id)
+        except Exception:
+            db.rollback()
+            path.unlink(missing_ok=True)
+            raise HTTPException(
+                status.HTTP_502_BAD_GATEWAY,
+                "Video processing failed. Check server logs and storage credentials.",
+            ) from None
+
+        media.storage_provider = result.storage_provider
+        media.thumbnail_url = result.thumbnail_url
+        media.r2_key = result.r2_key
+        media.r2_thumbnail_key = result.r2_thumbnail_key
+
+        if result.storage_provider == "mux":
+            media.mux_status = "processing"
+            media.file_url = ""
+        else:
+            media.mux_status = None
+            media.file_url = result.file_url or ""
+
+        if result.duration_seconds is not None:
+            media.duration_seconds = result.duration_seconds
+
+        if result.storage_provider in ("r2", "mux"):
+            path.unlink(missing_ok=True)
+
         db.commit()
         db.refresh(media)
         return MediaOut.model_validate(media)
@@ -150,14 +149,6 @@ def delete_media(
     media = db.get(Media, media_id)
     if not media or media.user_id != user.id:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Media not found")
-    if media.mux_asset_id:
-        delete_mux_asset(media.mux_asset_id)
-    else:
-        try:
-            suffix = Path(media.file_url).name
-            path = Path(settings.upload_dir) / str(user.id) / suffix
-            path.unlink(missing_ok=True)
-        except OSError:
-            pass
+    delete_stored_video(media)
     db.delete(media)
     db.commit()

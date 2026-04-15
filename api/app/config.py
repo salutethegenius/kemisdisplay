@@ -29,6 +29,14 @@ class Settings(BaseSettings):
     mux_token_secret: str = ""
     # Webhook signing secret from Mux dashboard (required to verify POST /mux/webhook).
     mux_webhook_signing_secret: str = ""
+    # Cloudflare R2 (S3-compatible). Large videos still use Mux when configured.
+    r2_account_id: str = ""
+    r2_access_key_id: str = ""
+    r2_secret_access_key: str = ""
+    r2_bucket_name: str = "kemisdisplay-media"
+    r2_public_url: str = ""
+    # Videos larger than this (MB) use Mux when Mux is enabled; smaller use R2 when R2 is enabled.
+    video_mux_threshold_mb: int = 50
 
     @field_validator("database_url", mode="before")
     @classmethod
@@ -59,6 +67,15 @@ class Settings(BaseSettings):
     @property
     def mux_enabled(self) -> bool:
         return bool(self.mux_token_id.strip() and self.mux_token_secret.strip())
+
+    @property
+    def r2_enabled(self) -> bool:
+        return bool(
+            self.r2_account_id.strip()
+            and self.r2_access_key_id.strip()
+            and self.r2_secret_access_key.strip()
+            and self.r2_public_url.strip()
+        )
 
 
 settings = Settings()
