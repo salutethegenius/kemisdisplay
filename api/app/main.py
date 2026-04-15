@@ -12,6 +12,7 @@ from app.config import settings
 from app.database import Base, SessionLocal, engine
 from app.models import User
 from app.routers import admin, auth, jobs, media, menus, mux_webhook, playlist, public_display, screens
+from app.services.r2_storage import check_r2_connection
 
 logger = logging.getLogger("kemisdisplay")
 
@@ -98,7 +99,13 @@ def health() -> dict[str, str]:
             "database": "unavailable",
             "hint": "Start Postgres: docker compose up -d (see README).",
         }
-    return {"status": "ok", "database": "ok"}
+    result: dict[str, str] = {"status": "ok", "database": "ok"}
+    r2 = check_r2_connection()
+    result["r2"] = r2["status"]
+    if r2["status"] == "error":
+        result["status"] = "degraded"
+        result["r2_detail"] = r2["detail"]
+    return result
 
 
 @app.on_event("startup")
@@ -113,3 +120,12 @@ def startup() -> None:
             "the database is running. Error: %s",
             e.orig if hasattr(e, "orig") and e.orig else e,
         )
+
+    if settings.r2_enabled:
+        r2 = check_r2_connection()
+        if r2["status"] == "ok":
+            logger.info("R2 connectivity OK (bucket: %s)", r2.get("bucket"))
+        else:
+            logger.error("R2 connectivity FAILED at startup: %s", r2.get("detail"))
+    else:
+        logger.info("R2 storage not configured (videos will use Mux or local disk).")

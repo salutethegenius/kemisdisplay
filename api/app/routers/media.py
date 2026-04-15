@@ -1,3 +1,4 @@
+import logging
 import uuid as uuid_lib
 from pathlib import Path
 from uuid import UUID
@@ -14,6 +15,8 @@ from app.schemas import MediaOut
 from app.services.limits import billing_allows_write, max_storage_bytes_for, sum_user_media_bytes
 from app.services.video_probe import probe_video_duration_seconds
 from app.services.video_router import delete_stored_video, process_video
+
+logger = logging.getLogger("kemisdisplay")
 
 router = APIRouter()
 
@@ -92,13 +95,14 @@ async def upload_media(
         db.flush()
         try:
             result = process_video(path, uid, user.id)
-        except Exception:
+        except Exception as exc:
+            logger.exception("Video processing failed for media %s (user %s): %s", uid, user.id, exc)
             db.rollback()
             path.unlink(missing_ok=True)
             raise HTTPException(
                 status.HTTP_502_BAD_GATEWAY,
-                "Video processing failed. Check server logs and storage credentials.",
-            ) from None
+                f"Video processing failed: {type(exc).__name__}. Check server logs for details.",
+            )
 
         media.storage_provider = result.storage_provider
         media.thumbnail_url = result.thumbnail_url

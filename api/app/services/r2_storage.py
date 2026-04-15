@@ -35,6 +35,18 @@ def upload_to_r2(file_path: str, key: str, content_type: str = "video/mp4") -> s
     return f"{base}/{key}"
 
 
+def check_r2_connection() -> dict[str, str]:
+    """Validate R2 credentials and bucket with a lightweight head_bucket call."""
+    if not settings.r2_enabled:
+        return {"status": "disabled", "detail": "R2 credentials not fully configured"}
+    try:
+        client = get_r2_client()
+        client.head_bucket(Bucket=settings.r2_bucket_name.strip())
+        return {"status": "ok", "bucket": settings.r2_bucket_name.strip()}
+    except Exception as e:
+        return {"status": "error", "detail": str(e)}
+
+
 def delete_from_r2(key: str) -> bool:
     try:
         client = get_r2_client()
