@@ -416,13 +416,25 @@ export function MenuEditor({ id }: { id: string }) {
               Refresh preview
             </button>
           </div>
-          <div className="aspect-video max-h-[min(70vh,540px)] w-full overflow-auto rounded-xl border border-zinc-800 bg-black">
+          <div className="aspect-video w-full overflow-hidden rounded-xl border border-zinc-800 bg-black">
             {previewHtml ? (
               <iframe
                 title="Preview"
                 srcDoc={previewHtml}
                 sandbox="allow-scripts allow-same-origin"
-                className="h-[1080px] w-[1920px] max-w-none border-0"
+                className="h-[1080px] w-[1920px] border-0 origin-top-left"
+                style={{ transform: "scale(var(--preview-scale,0.28))" }}
+                ref={(el) => {
+                  if (!el) return;
+                  const parent = el.parentElement;
+                  if (!parent) return;
+                  const ro = new ResizeObserver(([entry]) => {
+                    const s = entry.contentRect.width / 1920;
+                    parent.style.setProperty("--preview-scale", String(s));
+                    parent.style.height = `${1080 * s}px`;
+                  });
+                  ro.observe(parent);
+                }}
               />
             ) : (
               <div className="flex h-64 items-center justify-center text-zinc-600">
@@ -431,8 +443,7 @@ export function MenuEditor({ id }: { id: string }) {
             )}
           </div>
           <p className="mt-2 text-xs text-zinc-600">
-            Preview reflects the last saved menu. Save, then refresh here. Scroll to
-            see the full 1920×1080 frame.
+            Preview reflects the last saved menu. Save, then refresh here.
           </p>
         </div>
       </div>

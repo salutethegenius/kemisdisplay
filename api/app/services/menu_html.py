@@ -26,11 +26,7 @@ _CHALKBOARD = """<!DOCTYPE html>
   }
   .inner {
     position: absolute; left: 64px; right: 64px; top: 48px; bottom: 48px;
-    animation: scrollBoard 30s linear infinite;
-  }
-  @keyframes scrollBoard {
-    0% { transform: translateY(0); }
-    100% { transform: translateY(-12%); }
+    display: flex; flex-direction: column;
   }
   h1 {
     font-family: 'Caveat', cursive;
@@ -83,6 +79,20 @@ _CHALKBOARD = """<!DOCTYPE html>
   <div class="footer">{{ footer_note }}</div>
   {% endif %}
 </div></div></div>
+<script>
+(function(){
+  var inner = document.querySelector('.inner');
+  if(!inner) return;
+  var box = inner.getBoundingClientRect();
+  var sh = inner.scrollHeight;
+  if(sh > box.height){
+    var scale = box.height / sh;
+    inner.style.transformOrigin = 'top left';
+    inner.style.transform = 'scale(' + scale + ')';
+    inner.style.width = (100 / scale) + '%';
+  }
+})();
+</script>
 </body></html>
 """
 
