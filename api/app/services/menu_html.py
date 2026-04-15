@@ -17,82 +17,102 @@ _CHALKBOARD = """<!DOCTYPE html>
     overflow: hidden;
   }
   .board {
-    position: absolute; inset: 48px 72px;
+    position: absolute; inset: 40px 56px;
     background: linear-gradient(165deg, #141414 0%, #0e0e0e 40%, #121212 100%);
     border: 4px solid #2a2a2a;
     border-radius: 8px;
     box-shadow: inset 0 0 120px rgba(0,0,0,0.65), 0 24px 80px rgba(0,0,0,0.5);
-    overflow: hidden;
-  }
-  .inner {
-    position: absolute; left: 64px; right: 64px; top: 48px; bottom: 48px;
     display: flex; flex-direction: column;
+    overflow: hidden;
   }
   h1 {
     font-family: 'Caveat', cursive;
-    font-size: 72px;
+    font-size: 64px;
     color: #f5e6a8;
     text-align: center;
     text-decoration: underline;
-    text-underline-offset: 12px;
-    margin-bottom: 40px;
+    text-underline-offset: 10px;
+    padding: 32px 0 24px;
     text-shadow: 2px 2px 0 rgba(0,0,0,0.4);
+    flex-shrink: 0;
   }
-  .section { margin-bottom: 36px; }
-  .section h2 {
+  .grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 0;
+    padding: 0 48px;
+    min-height: 0;
+  }
+  .grid.cols-1 { grid-template-columns: 1fr; }
+  .quadrant {
+    padding: 16px 24px;
+    overflow: hidden;
+  }
+  /* Subtle divider lines between quadrants */
+  .quadrant:nth-child(odd) { border-right: 1px solid rgba(245,230,168,0.1); }
+  .quadrant:nth-child(-n+2) { border-bottom: 1px solid rgba(245,230,168,0.1); }
+  .quadrant h2 {
     font-family: 'Caveat', cursive;
-    font-size: 48px;
+    font-size: 40px;
     color: #e8d48b;
-    margin-bottom: 16px;
+    margin-bottom: 12px;
     border-bottom: 2px dashed rgba(245,230,168,0.25);
-    padding-bottom: 8px;
+    padding-bottom: 6px;
   }
   .row {
-    display: flex; justify-content: space-between; align-items: baseline;
+    display: flex; align-items: baseline;
     font-family: 'Caveat', cursive;
-    font-size: 38px;
+    font-size: 34px;
     color: #f0ead8;
-    padding: 10px 0;
-    border-bottom: 1px dotted rgba(240,234,216,0.12);
+    padding: 6px 0;
+    line-height: 1.2;
   }
-  .row .name { flex: 1; }
-  .row .price { font-weight: 700; color: #fff8dc; min-width: 120px; text-align: right; }
+  .row .name { white-space: nowrap; }
+  .row .dots {
+    flex: 1;
+    border-bottom: 2px dotted rgba(240,234,216,0.25);
+    margin: 0 8px;
+    min-width: 20px;
+    align-self: baseline;
+    position: relative;
+    top: -6px;
+  }
+  .row .price {
+    font-weight: 700;
+    color: #fff8dc;
+    white-space: nowrap;
+  }
   .footer {
-    margin-top: 48px;
     text-align: center;
     font-family: 'Inter', sans-serif;
-    font-size: 28px;
+    font-size: 26px;
     color: rgba(245,230,168,0.75);
+    padding: 16px 0 24px;
+    flex-shrink: 0;
   }
 </style></head><body>
-<div class="frame"><div class="board"><div class="inner">
+<div class="frame"><div class="board">
   <h1>{{ title }}</h1>
-  {% for sec in sections %}
-  <div class="section">
-    <h2>{{ sec.heading }}</h2>
-    {% for it in sec["items"] %}
-    <div class="row"><span class="name">{{ it.name }}</span><span class="price">{{ it.price | menu_price }}</span></div>
+  <div class="grid{% if sections | length <= 1 %} cols-1{% endif %}">
+    {% for sec in sections %}
+    <div class="quadrant">
+      <h2>{{ sec.heading }}</h2>
+      {% for it in sec["items"] %}
+      <div class="row">
+        <span class="name">{{ it.name }}</span>
+        <span class="dots"></span>
+        <span class="price">{{ it.price | menu_price }}</span>
+      </div>
+      {% endfor %}
+    </div>
     {% endfor %}
   </div>
-  {% endfor %}
   {% if footer_note %}
   <div class="footer">{{ footer_note }}</div>
   {% endif %}
-</div></div></div>
-<script>
-(function(){
-  var inner = document.querySelector('.inner');
-  if(!inner) return;
-  var box = inner.getBoundingClientRect();
-  var sh = inner.scrollHeight;
-  if(sh > box.height){
-    var scale = box.height / sh;
-    inner.style.transformOrigin = 'top left';
-    inner.style.transform = 'scale(' + scale + ')';
-    inner.style.width = (100 / scale) + '%';
-  }
-})();
-</script>
+</div></div>
 </body></html>
 """
 
