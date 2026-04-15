@@ -50,7 +50,7 @@ export function MenuList() {
         </Link>
       </div>
       <p className="mt-2 text-sm text-zinc-500">
-        Build a specials board, generate a 30s video, then add it to a playlist
+        Build a specials board, generate a video, then add it to a playlist
         from Media.
       </p>
       {err && <p className="mt-4 text-sm text-red-400">{err}</p>}
@@ -376,7 +376,7 @@ export function MenuEditor({ id }: { id: string }) {
               onClick={() => void renderVideo()}
               className="min-h-11 rounded-lg bg-emerald-500 px-4 py-2 text-sm font-semibold text-zinc-950 hover:bg-emerald-400"
             >
-              Generate 30s video
+              Generate video
             </button>
           </div>
           {saveMsg && (

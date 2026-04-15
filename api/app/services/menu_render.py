@@ -1,4 +1,4 @@
-"""Playwright + FFmpeg: menu HTML -> 30s H.264 MP4."""
+"""Playwright + FFmpeg: menu HTML -> 10s H.264 MP4."""
 
 import logging
 import shutil
@@ -97,7 +97,7 @@ def run_menu_render_job(job_id: UUID) -> None:
             )
             page = context.new_page()
             page.goto(html_path.as_uri(), wait_until="networkidle", timeout=120_000)
-            page.wait_for_timeout(30_000)
+            page.wait_for_timeout(10_000)
             context.close()
             browser.close()
 
@@ -116,7 +116,7 @@ def run_menu_render_job(job_id: UUID) -> None:
             "-i",
             str(webm_path),
             "-t",
-            "30",
+            "10",
             "-c:v",
             "libx264",
             "-pix_fmt",
