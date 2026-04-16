@@ -38,7 +38,7 @@
 
 8. **Health check:** `GET /health` (configured in `railway.json`).
 
-9. **Menu video rendering:** Needs **ffmpeg** (via `nixpacks.toml`) and optionally **Playwright + Chromium** (`pip` + `playwright install chromium` in a custom image or build step). Without Playwright, menu jobs fail with a clear error; the rest of the API still works.
+9. **Menu video rendering:** Needs **ffmpeg** (via `nixpacks.toml`) and **Playwright + Chromium** for captures. Do **not** run `playwright install` in Railway `startCommand` — it blocks `uvicorn` and `/health` will time out. After a successful deploy, use **Railway Shell** once: `playwright install chromium` (or bake browsers into a custom Dockerfile). Until then, menu jobs fail with a clear error; the rest of the API works.
 
 ---
 
