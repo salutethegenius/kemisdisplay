@@ -21,7 +21,7 @@ logger = logging.getLogger("kemisdisplay")
 router = APIRouter()
 
 ALLOWED_IMAGE = {".jpg", ".jpeg", ".png", ".gif", ".webp"}
-ALLOWED_VIDEO = {".mp4", ".webm", ".mov"}
+ALLOWED_VIDEO = {".mp4", ".webm"}
 MAX_UPLOAD_BYTES = 100 * 1024 * 1024  # 100 MB absolute ceiling
 
 
@@ -60,7 +60,7 @@ async def upload_media(
     if not kind:
         raise HTTPException(
             status.HTTP_400_BAD_REQUEST,
-            "Unsupported file type. Use images (jpg, png, webp, gif) or video (mp4, webm, mov).",
+            "Unsupported file type. Use images (jpg, png, webp, gif) or video (mp4, webm).",
         )
     data = await file.read()
     size = len(data)

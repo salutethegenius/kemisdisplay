@@ -63,10 +63,10 @@ function ScreenList() {
   return (
     <div>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl font-semibold text-white">Your screens</h1>
+        <h1 className="font-heading text-2xl font-semibold text-brand-cream">Your screens</h1>
         <Link
           href="/dashboard/screens/new"
-          className="inline-flex min-h-11 items-center justify-center rounded-lg bg-emerald-500 px-4 text-sm font-semibold text-zinc-950 hover:bg-emerald-400"
+          className="inline-flex min-h-11 items-center justify-center rounded-lg bg-brand-amber px-4 text-sm font-semibold text-brand-deep hover:bg-brand-amber-bright"
         >
           New screen
         </Link>
@@ -74,19 +74,19 @@ function ScreenList() {
       <div className="mt-4 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
         <Link
           href="/dashboard/media"
-          className="inline-flex min-h-11 items-center justify-center rounded-lg border border-zinc-600 bg-zinc-900/50 px-3 text-sm font-medium text-zinc-200 hover:bg-zinc-800"
+          className="inline-flex min-h-11 items-center justify-center rounded-lg border border-white/15 bg-brand-warm/80 px-3 text-sm font-medium text-brand-cream hover:bg-brand-warm"
         >
           Media library
         </Link>
         <Link
           href="/dashboard/menus"
-          className="inline-flex min-h-11 items-center justify-center rounded-lg border border-zinc-600 bg-zinc-900/50 px-3 text-sm font-medium text-zinc-200 hover:bg-zinc-800"
+          className="inline-flex min-h-11 items-center justify-center rounded-lg border border-white/15 bg-brand-warm/80 px-3 text-sm font-medium text-brand-cream hover:bg-brand-warm"
         >
           Menus
         </Link>
         <Link
           href="/dashboard/menus/new"
-          className="col-span-2 inline-flex min-h-11 items-center justify-center rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-3 text-sm font-medium text-emerald-300 hover:bg-emerald-500/20 sm:col-span-1"
+          className="col-span-2 inline-flex min-h-11 items-center justify-center rounded-lg border border-brand-amber/40 bg-brand-amber/10 px-3 text-sm font-medium text-brand-amber hover:bg-brand-amber/20 sm:col-span-1"
         >
           New menu video
         </Link>
@@ -96,11 +96,11 @@ function ScreenList() {
         {screens.map((s) => (
           <li
             key={s.id}
-            className="flex flex-col gap-2 rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 sm:flex-row sm:items-center sm:justify-between"
+            className="flex flex-col gap-2 rounded-xl border border-white/10 bg-brand-warm/80 p-4 sm:flex-row sm:items-center sm:justify-between"
           >
             <div>
-              <p className="font-medium text-white">{s.name}</p>
-              <p className="mt-1 break-all font-mono text-xs text-zinc-500">
+              <p className="font-medium text-brand-cream">{s.name}</p>
+              <p className="mt-1 break-all font-mono text-xs text-brand-muted">
                 {typeof window !== "undefined"
                   ? `${window.location.origin}${s.display_url_hint}`
                   : s.display_url_hint}
@@ -109,13 +109,13 @@ function ScreenList() {
             <div className="flex flex-wrap gap-2">
               <Link
                 href={`/dashboard/screens/${s.id}/playlist`}
-                className="inline-flex min-h-11 min-w-[88px] items-center justify-center rounded-lg border border-zinc-600 px-3 text-sm text-zinc-200 hover:bg-zinc-800"
+                className="inline-flex min-h-11 min-w-[88px] items-center justify-center rounded-lg border border-white/15 px-3 text-sm text-brand-cream hover:bg-brand-warm"
               >
                 Playlist
               </Link>
               <Link
                 href={`/dashboard/screens/${s.id}`}
-                className="inline-flex min-h-11 min-w-[88px] items-center justify-center rounded-lg border border-zinc-600 px-3 text-sm text-zinc-200 hover:bg-zinc-800"
+                className="inline-flex min-h-11 min-w-[88px] items-center justify-center rounded-lg border border-white/15 px-3 text-sm text-brand-cream hover:bg-brand-warm"
               >
                 Settings
               </Link>
@@ -124,7 +124,7 @@ function ScreenList() {
         ))}
       </ul>
       {screens.length === 0 && !err && (
-        <p className="mt-12 text-center text-sm text-zinc-500">
+        <p className="mt-12 text-center text-sm text-brand-muted">
           No screens yet. Create one to get a display URL for your TV.
         </p>
       )}
@@ -165,30 +165,30 @@ function NewScreen() {
     <div className="mx-auto max-w-lg">
       <Link
         href="/dashboard"
-        className="text-sm text-zinc-500 hover:text-zinc-300"
+        className="text-sm text-brand-muted hover:text-brand-cream"
       >
         ← Back to screens
       </Link>
-      <h1 className="mt-6 text-2xl font-semibold text-white">New screen</h1>
-      <p className="mt-2 text-sm text-zinc-500">
+      <h1 className="mt-6 font-heading text-2xl font-semibold text-brand-cream">New screen</h1>
+      <p className="mt-2 text-sm text-brand-muted">
         Name the screen (e.g. &quot;Front bar TV&quot;). You&apos;ll get a
         unique URL to open on the display.
       </p>
       <form onSubmit={onSubmit} className="mt-8 space-y-4">
         <div>
-          <label className="text-xs font-medium text-zinc-400">Name</label>
+          <label className="text-xs font-medium text-brand-text">Name</label>
           <input
             required
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-white outline-none focus:border-emerald-500"
+            className="mt-1 w-full rounded-lg border border-white/10 bg-brand-warm px-3 py-2 text-sm text-brand-cream outline-none focus:border-brand-amber"
           />
         </div>
         {err && <p className="text-sm text-red-400">{err}</p>}
         <button
           type="submit"
           disabled={pending}
-          className="rounded-lg bg-emerald-500 px-5 py-2.5 text-sm font-semibold text-zinc-950 hover:bg-emerald-400 disabled:opacity-50"
+          className="rounded-lg bg-brand-amber px-5 py-2.5 text-sm font-semibold text-brand-deep hover:bg-brand-amber-bright disabled:opacity-50"
         >
           {pending ? "Creating…" : "Create screen"}
         </button>
@@ -260,7 +260,7 @@ function ScreenSettings({ id }: { id: string }) {
   }
 
   if (!screen && !err) {
-    return <p className="text-zinc-500">Loading…</p>;
+    return <p className="text-brand-muted">Loading…</p>;
   }
   if (err && !screen) {
     return <p className="text-red-400">{err}</p>;
@@ -270,35 +270,35 @@ function ScreenSettings({ id }: { id: string }) {
     <div className="mx-auto max-w-xl">
       <Link
         href="/dashboard"
-        className="text-sm text-zinc-500 hover:text-zinc-300"
+        className="text-sm text-brand-muted hover:text-brand-cream"
       >
         ← Screens
       </Link>
-      <h1 className="mt-6 text-2xl font-semibold text-white">Screen settings</h1>
+      <h1 className="mt-6 font-heading text-2xl font-semibold text-brand-cream">Screen settings</h1>
 
       <form onSubmit={saveName} className="mt-8 space-y-4">
         <div>
-          <label className="text-xs font-medium text-zinc-400">Name</label>
+          <label className="text-xs font-medium text-brand-text">Name</label>
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-white outline-none focus:border-emerald-500"
+            className="mt-1 w-full rounded-lg border border-white/10 bg-brand-warm px-3 py-2 text-sm text-brand-cream outline-none focus:border-brand-amber"
           />
         </div>
         {err && <p className="text-sm text-red-400">{err}</p>}
         <button
           type="submit"
-          className="rounded-lg border border-zinc-600 px-4 py-2 text-sm text-zinc-200 hover:bg-zinc-800"
+          className="rounded-lg border border-white/15 px-4 py-2 text-sm text-brand-cream hover:bg-brand-warm"
         >
           Save name
         </button>
       </form>
 
-      <div className="mt-10 rounded-xl border border-zinc-800 bg-zinc-900/40 p-4">
-        <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">
+      <div className="mt-10 rounded-xl border border-white/10 bg-brand-warm/60 p-4">
+        <p className="text-xs font-medium uppercase tracking-wide text-brand-muted">
           Display URL
         </p>
-        <p className="mt-2 break-all font-mono text-sm text-emerald-400/90">
+        <p className="mt-2 break-all font-mono text-sm text-brand-amber/90">
           {fullUrl}
         </p>
         <button
@@ -309,7 +309,7 @@ function ScreenSettings({ id }: { id: string }) {
               setTimeout(() => setCopied(false), 2000);
             });
           }}
-          className="mt-3 text-sm text-zinc-400 hover:text-white"
+          className="mt-3 text-sm text-brand-text hover:text-brand-cream"
         >
           {copied ? "Copied" : "Copy URL"}
         </button>
@@ -325,7 +325,7 @@ function ScreenSettings({ id }: { id: string }) {
         </button>
         <Link
           href={`/dashboard/screens/${id}/playlist`}
-          className="rounded-lg bg-emerald-500/20 px-4 py-2 text-sm font-medium text-emerald-300 hover:bg-emerald-500/30"
+          className="rounded-lg bg-brand-amber/20 px-4 py-2 text-sm font-medium text-brand-amber hover:bg-brand-amber/30"
         >
           Edit playlist
         </Link>
@@ -426,21 +426,21 @@ function PlaylistEditor({ id }: { id: string }) {
     <div className="mx-auto max-w-2xl">
       <Link
         href={`/dashboard/screens/${id}`}
-        className="text-sm text-zinc-500 hover:text-zinc-300"
+        className="text-sm text-brand-muted hover:text-brand-cream"
       >
         ← Screen settings
       </Link>
-      <h1 className="mt-6 text-2xl font-semibold text-white">Playlist</h1>
-      <p className="mt-2 text-sm text-zinc-500">
+      <h1 className="mt-6 font-heading text-2xl font-semibold text-brand-cream">Playlist</h1>
+      <p className="mt-2 text-sm text-brand-muted">
         Order and duration (seconds) per slide. Save to push updates to displays
         (polls about every minute).
       </p>
 
-      <div className="mt-6 flex flex-wrap gap-2">
+      <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
         <select
           value={pick}
           onChange={(e) => setPick(e.target.value)}
-          className="rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-white"
+          className="min-h-11 w-full rounded-lg border border-white/10 bg-brand-warm px-3 py-2 text-sm text-brand-cream sm:max-w-md sm:flex-1"
         >
           <option value="">Add media…</option>
           {media
@@ -460,7 +460,7 @@ function PlaylistEditor({ id }: { id: string }) {
         <button
           type="button"
           onClick={addMedia}
-          className="rounded-lg border border-zinc-600 px-3 py-2 text-sm text-zinc-200 hover:bg-zinc-800"
+          className="min-h-11 rounded-lg border border-white/15 px-3 py-2 text-sm text-brand-cream hover:bg-brand-warm sm:shrink-0"
         >
           Add
         </button>
@@ -468,7 +468,7 @@ function PlaylistEditor({ id }: { id: string }) {
           type="button"
           onClick={() => void save()}
           disabled={saving}
-          className="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-semibold text-zinc-950 hover:bg-emerald-400 disabled:opacity-50"
+          className="min-h-11 rounded-lg bg-brand-amber px-4 py-2 text-sm font-semibold text-brand-deep hover:bg-brand-amber-bright disabled:opacity-50 sm:shrink-0"
         >
           {saving ? "Saving…" : "Save playlist"}
         </button>
@@ -479,50 +479,54 @@ function PlaylistEditor({ id }: { id: string }) {
         {rows.map((r, i) => (
           <li
             key={r.id}
-            className="flex flex-wrap items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-900/50 p-3"
+            className="flex flex-col gap-3 rounded-lg border border-white/10 bg-brand-warm/80 p-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-2"
           >
-            <span className="min-w-0 flex-1 truncate text-sm text-zinc-300">
+            <span className="min-w-0 flex-1 text-sm text-brand-cream sm:truncate">
               {r.filename}
             </span>
-            <label className="flex items-center gap-1 text-xs text-zinc-500">
-              sec
-              <input
-                type="number"
-                min={1}
-                max={3600}
-                value={r.duration_seconds}
-                onChange={(e) => {
-                  const v = parseInt(e.target.value, 10) || 1;
-                  setRows(
-                    rows.map((x, j) =>
-                      j === i ? { ...x, duration_seconds: v } : x,
-                    ),
-                  );
-                }}
-                className="w-16 rounded border border-zinc-700 bg-zinc-950 px-2 py-1 text-sm text-white"
-              />
-            </label>
-            <button
-              type="button"
-              onClick={() => move(i, -1)}
-              className="rounded border border-zinc-700 px-2 py-1 text-zinc-400 hover:bg-zinc-800"
-            >
-              ↑
-            </button>
-            <button
-              type="button"
-              onClick={() => move(i, 1)}
-              className="rounded border border-zinc-700 px-2 py-1 text-zinc-400 hover:bg-zinc-800"
-            >
-              ↓
-            </button>
-            <button
-              type="button"
-              onClick={() => removeAt(i)}
-              className="text-sm text-red-400 hover:underline"
-            >
-              Remove
-            </button>
+            <div className="flex flex-wrap items-center gap-2">
+              <label className="flex items-center gap-1 text-xs text-brand-muted">
+                sec
+                <input
+                  type="number"
+                  min={1}
+                  max={3600}
+                  value={r.duration_seconds}
+                  onChange={(e) => {
+                    const v = parseInt(e.target.value, 10) || 1;
+                    setRows(
+                      rows.map((x, j) =>
+                        j === i ? { ...x, duration_seconds: v } : x,
+                      ),
+                    );
+                  }}
+                  className="min-h-9 w-16 rounded border border-white/10 bg-brand-deep px-2 py-1 text-sm text-brand-cream"
+                />
+              </label>
+              <button
+                type="button"
+                onClick={() => move(i, -1)}
+                className="min-h-9 min-w-9 rounded border border-white/10 px-2 py-1 text-brand-text hover:bg-brand-warm"
+                aria-label="Move up"
+              >
+                ↑
+              </button>
+              <button
+                type="button"
+                onClick={() => move(i, 1)}
+                className="min-h-9 min-w-9 rounded border border-white/10 px-2 py-1 text-brand-text hover:bg-brand-warm"
+                aria-label="Move down"
+              >
+                ↓
+              </button>
+              <button
+                type="button"
+                onClick={() => removeAt(i)}
+                className="min-h-9 text-sm text-red-400 hover:underline"
+              >
+                Remove
+              </button>
+            </div>
           </li>
         ))}
       </ul>
@@ -588,12 +592,12 @@ function MediaLibrary() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-white">Media library</h1>
-      <p className="mt-2 text-sm text-zinc-500">
+      <h1 className="font-heading text-2xl font-semibold text-brand-cream">Media library</h1>
+      <p className="mt-2 text-sm text-brand-muted">
         Images and video. Upload from here, then add to a screen playlist.
       </p>
       <div className="mt-6">
-        <label className="inline-flex min-h-11 cursor-pointer items-center justify-center rounded-lg bg-emerald-500 px-4 text-sm font-semibold text-zinc-950 hover:bg-emerald-400">
+        <label className="inline-flex min-h-11 cursor-pointer items-center justify-center rounded-lg bg-brand-amber px-4 text-sm font-semibold text-brand-deep hover:bg-brand-amber-bright">
           {pending ? "Uploading…" : "Upload file"}
           <input
             type="file"
@@ -610,7 +614,7 @@ function MediaLibrary() {
           {items.map((m) => (
             <li
               key={m.id}
-              className="flex flex-col gap-3 rounded-xl border border-zinc-800 bg-zinc-900/50 p-4"
+              className="flex flex-col gap-3 rounded-xl border border-white/10 bg-brand-warm/80 p-4"
             >
               <div className="flex gap-3">
                 {m.thumbnail_url ? (
@@ -622,8 +626,8 @@ function MediaLibrary() {
                   />
                 ) : null}
                 <div className="min-w-0">
-                  <p className="text-sm font-medium text-white">{m.filename}</p>
-                  <p className="mt-1 text-xs text-zinc-500">
+                  <p className="text-sm font-medium text-brand-cream">{m.filename}</p>
+                  <p className="mt-1 text-xs text-brand-muted">
                     {m.type}
                     {m.mux_status === "processing" ? (
                       <span className="text-amber-400"> · Processing…</span>
@@ -649,9 +653,9 @@ function MediaLibrary() {
           ))}
         </ul>
       </div>
-      <div className="mt-8 hidden overflow-x-auto rounded-xl border border-zinc-800 md:block">
+      <div className="mt-8 hidden overflow-x-auto rounded-xl border border-white/10 md:block">
         <table className="w-full min-w-[560px] text-left text-sm">
-          <thead className="border-b border-zinc-800 bg-zinc-900/80 text-xs uppercase tracking-wide text-zinc-500">
+          <thead className="border-b border-white/10 bg-brand-bar text-xs uppercase tracking-wide text-brand-muted">
             <tr>
               <th className="px-4 py-3">Preview</th>
               <th className="px-4 py-3">File</th>
@@ -661,7 +665,7 @@ function MediaLibrary() {
               <th className="px-4 py-3" />
             </tr>
           </thead>
-          <tbody className="divide-y divide-zinc-800 text-zinc-300">
+          <tbody className="divide-y divide-white/10 text-brand-cream">
             {items.map((m) => (
               <tr key={m.id}>
                 <td className="px-4 py-3">
@@ -673,10 +677,10 @@ function MediaLibrary() {
                       className="h-12 w-20 rounded object-cover"
                     />
                   ) : (
-                    <span className="text-zinc-600">—</span>
+                    <span className="text-brand-muted">—</span>
                   )}
                 </td>
-                <td className="max-w-[200px] truncate px-4 py-3 text-white">
+                <td className="max-w-[200px] truncate px-4 py-3 text-brand-cream">
                   {m.filename}
                 </td>
                 <td className="px-4 py-3">
@@ -824,10 +828,10 @@ function AdminUsers() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-white">Admin · Users</h1>
-      <p className="mt-2 max-w-2xl text-sm text-zinc-500">
+      <h1 className="font-heading text-2xl font-semibold text-brand-cream">Admin · Users</h1>
+      <p className="mt-2 max-w-2xl text-sm text-brand-muted">
         View and edit customer accounts. Grant admin with the checkbox (or set{" "}
-        <code className="text-zinc-400">ADMIN_EMAILS</code> in the API env and
+        <code className="text-brand-text">ADMIN_EMAILS</code> in the API env and
         restart to auto-promote listed emails).
       </p>
 
@@ -835,13 +839,13 @@ function AdminUsers() {
         {rows.map((r) => (
           <div
             key={r.id}
-            className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4"
+            className="rounded-xl border border-white/10 bg-brand-warm/80 p-4"
           >
-            <p className="font-mono text-xs text-emerald-400/90">{r.email}</p>
-            <p className="mt-2 text-sm text-zinc-300">
+            <p className="font-mono text-xs text-brand-amber/90">{r.email}</p>
+            <p className="mt-2 text-sm text-brand-cream">
               {r.business_name || "—"} · {r.plan}
             </p>
-            <p className="mt-1 text-xs text-zinc-500">
+            <p className="mt-1 text-xs text-brand-muted">
               Tier {r.effective_tier ?? "—"} · {r.screen_count} screens ·{" "}
               {r.media_count} media
               {r.is_admin ? " · admin" : ""}
@@ -850,7 +854,7 @@ function AdminUsers() {
               <button
                 type="button"
                 onClick={() => openEdit(r)}
-                className="min-h-11 flex-1 rounded-lg border border-zinc-600 text-sm text-emerald-400 hover:bg-zinc-800"
+                className="min-h-11 flex-1 rounded-lg border border-white/15 text-sm text-brand-amber hover:bg-brand-warm"
               >
                 Edit
               </button>
@@ -868,9 +872,9 @@ function AdminUsers() {
         ))}
       </div>
 
-      <div className="mt-8 hidden overflow-x-auto rounded-xl border border-zinc-800 md:block">
+      <div className="mt-8 hidden overflow-x-auto rounded-xl border border-white/10 md:block">
         <table className="w-full min-w-[720px] text-left text-sm">
-          <thead className="border-b border-zinc-800 bg-zinc-900/80 text-xs uppercase tracking-wide text-zinc-500">
+          <thead className="border-b border-white/10 bg-brand-bar text-xs uppercase tracking-wide text-brand-muted">
             <tr>
               <th className="px-4 py-3">Email</th>
               <th className="px-4 py-3">Business</th>
@@ -882,17 +886,17 @@ function AdminUsers() {
               <th className="px-4 py-3" />
             </tr>
           </thead>
-          <tbody className="divide-y divide-zinc-800">
+          <tbody className="divide-y divide-white/10">
             {rows.map((r) => (
-              <tr key={r.id} className="text-zinc-300">
-                <td className="px-4 py-3 font-mono text-xs text-emerald-400/90">
+              <tr key={r.id} className="text-brand-cream">
+                <td className="px-4 py-3 font-mono text-xs text-brand-amber/90">
                   {r.email}
                 </td>
                 <td className="max-w-[140px] truncate px-4 py-3">
                   {r.business_name || "—"}
                 </td>
                 <td className="px-4 py-3">{r.plan}</td>
-                <td className="px-4 py-3 text-zinc-500">
+                <td className="px-4 py-3 text-brand-muted">
                   {r.effective_tier ?? "—"}
                 </td>
                 <td className="px-4 py-3">{r.screen_count}</td>
@@ -902,7 +906,7 @@ function AdminUsers() {
                   <button
                     type="button"
                     onClick={() => openEdit(r)}
-                    className="text-emerald-400 hover:underline"
+                    className="text-brand-amber hover:underline"
                   >
                     Edit
                   </button>
@@ -924,28 +928,28 @@ function AdminUsers() {
 
       {editing && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-          <div className="w-full max-w-md rounded-xl border border-zinc-700 bg-zinc-900 p-6 shadow-xl">
-            <h2 className="text-lg font-semibold text-white">Edit user</h2>
-            <p className="mt-1 font-mono text-xs text-zinc-500">{editing.email}</p>
+          <div className="w-full max-w-md rounded-xl border border-white/10 bg-brand-warm p-6 shadow-xl">
+            <h2 className="text-lg font-semibold text-brand-cream">Edit user</h2>
+            <p className="mt-1 font-mono text-xs text-brand-muted">{editing.email}</p>
             <div className="mt-4 space-y-3">
               <div>
-                <label className="text-xs text-zinc-500">Business name</label>
+                <label className="text-xs text-brand-muted">Business name</label>
                 <input
                   value={form.business_name}
                   onChange={(e) =>
                     setForm((f) => ({ ...f, business_name: e.target.value }))
                   }
-                  className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-white"
+                  className="mt-1 w-full rounded-lg border border-white/10 bg-brand-deep px-3 py-2 text-sm text-brand-cream"
                 />
               </div>
               <div>
-                <label className="text-xs text-zinc-500">Plan</label>
+                <label className="text-xs text-brand-muted">Plan</label>
                 <select
                   value={form.plan}
                   onChange={(e) =>
                     setForm((f) => ({ ...f, plan: e.target.value }))
                   }
-                  className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-white"
+                  className="mt-1 w-full rounded-lg border border-white/10 bg-brand-deep px-3 py-2 text-sm text-brand-cream"
                 >
                   {["trialing", "starter", "pro", "business"].map((p) => (
                     <option key={p} value={p}>
@@ -955,24 +959,24 @@ function AdminUsers() {
                 </select>
               </div>
               <div>
-                <label className="text-xs text-zinc-500">Trial ends (local)</label>
+                <label className="text-xs text-brand-muted">Trial ends (local)</label>
                 <input
                   type="datetime-local"
                   value={form.trial_local}
                   onChange={(e) =>
                     setForm((f) => ({ ...f, trial_local: e.target.value }))
                   }
-                  className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-white"
+                  className="mt-1 w-full rounded-lg border border-white/10 bg-brand-deep px-3 py-2 text-sm text-brand-cream"
                 />
               </div>
-              <label className="flex items-center gap-2 text-sm text-zinc-300">
+              <label className="flex items-center gap-2 text-sm text-brand-cream">
                 <input
                   type="checkbox"
                   checked={form.is_admin}
                   onChange={(e) =>
                     setForm((f) => ({ ...f, is_admin: e.target.checked }))
                   }
-                  className="rounded border-zinc-600"
+                  className="rounded border-white/15"
                 />
                 Admin access
               </label>
@@ -984,7 +988,7 @@ function AdminUsers() {
               <button
                 type="button"
                 onClick={() => setEditing(null)}
-                className="rounded-lg border border-zinc-600 px-4 py-2 text-sm text-zinc-300"
+                className="rounded-lg border border-white/15 px-4 py-2 text-sm text-brand-cream"
               >
                 Cancel
               </button>
@@ -992,7 +996,7 @@ function AdminUsers() {
                 type="button"
                 disabled={pending}
                 onClick={() => void saveEdit()}
-                className="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-semibold text-zinc-950 disabled:opacity-50"
+                className="rounded-lg bg-brand-amber px-4 py-2 text-sm font-semibold text-brand-deep disabled:opacity-50"
               >
                 {pending ? "Saving…" : "Save"}
               </button>
@@ -1012,28 +1016,28 @@ function AccountPage() {
 
   return (
     <div className="max-w-lg">
-      <h1 className="text-2xl font-semibold text-white">Account</h1>
-      <div className="mt-6 space-y-4 rounded-xl border border-zinc-800 bg-zinc-900/40 p-6 text-sm text-zinc-300">
+      <h1 className="font-heading text-2xl font-semibold text-brand-cream">Account</h1>
+      <div className="mt-6 space-y-4 rounded-xl border border-white/10 bg-brand-warm/60 p-6 text-sm text-brand-cream">
         <p>
-          <span className="text-zinc-500">Email</span>
+          <span className="text-brand-muted">Email</span>
           <br />
           {user?.email}
         </p>
         <p>
-          <span className="text-zinc-500">Plan</span>
+          <span className="text-brand-muted">Plan</span>
           <br />
           {user?.plan} · effective tier: {user?.effective_tier ?? "none"}
         </p>
         <p>
-          <span className="text-zinc-500">Trial ends</span>
+          <span className="text-brand-muted">Trial ends</span>
           <br />
           {user?.trial_ends_at
             ? new Date(user.trial_ends_at).toLocaleString()
             : "—"}
         </p>
-        <p className="text-zinc-500">
+        <p className="text-brand-muted">
           Billing via KemisPay will appear here in Phase 3. For now, use{" "}
-          <code className="text-zinc-400">DEV_BYPASS_BILLING</code> in local API
+          <code className="text-brand-text">DEV_BYPASS_BILLING</code> in local API
           env for unrestricted dev.
         </p>
       </div>

@@ -5,12 +5,6 @@ import { NextResponse } from "next/server";
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  if (pathname.startsWith("/display/") && pathname.length > "/display/".length) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/";
-    return NextResponse.rewrite(url);
-  }
-
   if (pathname.startsWith("/dashboard/") && pathname.length > "/dashboard/".length) {
     const url = request.nextUrl.clone();
     url.pathname = "/dashboard";
@@ -21,5 +15,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/display/:path*", "/dashboard/:path*"],
+  matcher: ["/dashboard/:path*"],
 };

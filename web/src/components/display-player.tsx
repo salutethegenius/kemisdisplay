@@ -25,6 +25,10 @@ export function DisplayPlayer({ slug, token }: { slug: string; token: string }) 
   const [loading, setLoading] = useState(true);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const itemsRef = useRef<Item[]>([]);
+  const idxRef = useRef(0);
+  itemsRef.current = items;
+  idxRef.current = idx;
 
   const fetchPlaylist = useCallback(async () => {
     const u = new URL(
@@ -135,12 +139,20 @@ export function DisplayPlayer({ slug, token }: { slug: string; token: string }) 
   }, [items.length]);
 
   const onMediaFailed = useCallback(() => {
-    setErr(
-      "Media failed to load (bad URL, missing file, or HTTPS). Fix PUBLIC_API_BASE_URL / file URLs, then refresh this page.",
-    );
-    setItems([]);
-    setIdx(0);
-    clearPlaylistCache(slug);
+    const i = idxRef.current;
+    const prev = itemsRef.current;
+    if (i < 0 || i >= prev.length) return;
+    const next = prev.filter((_, j) => j !== i);
+    const newIdx =
+      next.length === 0 ? 0 : Math.min(i, next.length - 1);
+    setItems(next);
+    setIdx(newIdx);
+    if (next.length === 0) {
+      setErr(
+        "No playlist media could be loaded. Check file URLs, R2 CORS, and formats (use MP4 for TVs).",
+      );
+      clearPlaylistCache(slug);
+    }
   }, [slug]);
 
   useEffect(() => {

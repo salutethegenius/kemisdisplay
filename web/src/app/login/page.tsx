@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { BrandLockup } from "@/components/brand-lockup";
 import { apiFetch } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 
@@ -25,7 +26,21 @@ export default function LoginPage() {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setErr(data.detail || data.message || "Login failed");
+        if (res.status === 404) {
+          setErr(
+            "API not found. In Vercel set NEXT_PUBLIC_API_URL to your Railway API base URL (not this website), then redeploy.",
+          );
+          return;
+        }
+        setErr(
+          typeof data.detail === "string"
+            ? data.detail
+            : Array.isArray(data.detail)
+              ? data.detail
+                  .map((d: { msg?: string }) => d.msg || JSON.stringify(d))
+                  .join(" ")
+              : data.message || "Login failed",
+        );
         return;
       }
       login(data.access_token, data.user);
@@ -36,51 +51,49 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-zinc-950 px-4">
+    <div className="flex min-h-screen min-h-[100dvh] flex-col items-center justify-center bg-brand-deep px-4 py-8 pt-[max(2rem,env(safe-area-inset-top))] pb-[max(2rem,env(safe-area-inset-bottom))]">
       <div className="w-full max-w-sm">
-        <Link href="/" className="text-lg font-semibold text-white">
-          KemisDisplay
-        </Link>
-        <h1 className="mt-8 text-2xl font-semibold text-white">Log in</h1>
-        <p className="mt-2 text-sm text-zinc-500">
+        <BrandLockup markSize={40} href="/" />
+        <h1 className="mt-8 font-heading text-2xl font-semibold text-brand-cream">
+          Log in
+        </h1>
+        <p className="mt-2 text-sm text-brand-text">
           No account?{" "}
-          <Link href="/signup" className="text-emerald-400 hover:underline">
+          <Link href="/signup" className="text-brand-amber hover:underline">
             Start a trial
           </Link>{" "}
           — 14 days free, 4 screens, then $25.00/mo Starter.
         </p>
         <form onSubmit={onSubmit} className="mt-8 space-y-4">
           <div>
-            <label className="text-xs font-medium text-zinc-400">Email</label>
+            <label className="label-brand">Email</label>
             <input
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-white outline-none focus:border-emerald-500"
+              className="input-brand"
             />
           </div>
           <div>
-            <label className="text-xs font-medium text-zinc-400">
-              Password
-            </label>
+            <label className="label-brand">Password</label>
             <input
               type="password"
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-white outline-none focus:border-emerald-500"
+              className="input-brand"
             />
           </div>
           {err && (
-            <p className="text-sm text-red-400" role="alert">
+            <p className="text-sm text-brand-signal" role="alert">
               {typeof err === "string" ? err : JSON.stringify(err)}
             </p>
           )}
           <button
             type="submit"
             disabled={pending}
-            className="w-full rounded-lg bg-emerald-500 py-2.5 text-sm font-semibold text-zinc-950 hover:bg-emerald-400 disabled:opacity-50"
+            className="btn-brand-primary w-full py-2.5"
           >
             {pending ? "Signing in…" : "Sign in"}
           </button>

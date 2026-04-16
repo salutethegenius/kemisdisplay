@@ -2,7 +2,13 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { apiFetch } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 
@@ -17,6 +23,85 @@ export type MenuRow = {
   created_at: string;
   updated_at: string;
 };
+
+function ChalkPreviewPanel({
+  previewHtml,
+  onRefresh,
+}: {
+  previewHtml: string | null;
+  onRefresh: () => void;
+}) {
+  const frameWrapRef = useRef<HTMLDivElement>(null);
+
+  useLayoutEffect(() => {
+    const parent = frameWrapRef.current;
+    if (!parent || !previewHtml) return;
+    const ro = new ResizeObserver(([entry]) => {
+      const s = entry.contentRect.width / 1920;
+      parent.style.setProperty("--preview-scale", String(s));
+      parent.style.height = `${1080 * s}px`;
+    });
+    ro.observe(parent);
+    return () => ro.disconnect();
+  }, [previewHtml]);
+
+  return (
+    <>
+      <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-xs font-medium uppercase tracking-wide text-brand-muted">
+          Live preview (chalkboard)
+        </p>
+        <button
+          type="button"
+          onClick={() => void onRefresh()}
+          className="min-h-10 shrink-0 rounded-lg border border-white/10 px-3 py-2 text-xs text-brand-cream hover:bg-brand-warm sm:py-1.5"
+        >
+          Refresh preview
+        </button>
+      </div>
+      <div
+        ref={frameWrapRef}
+        className="aspect-video w-full max-h-[70vh] overflow-hidden rounded-xl border border-white/10 bg-black lg:max-h-none"
+      >
+        {previewHtml ? (
+          <iframe
+            title="Chalkboard preview"
+            srcDoc={previewHtml}
+            sandbox="allow-scripts allow-same-origin"
+            className="h-[1080px] w-[1920px] border-0 origin-top-left"
+            style={{ transform: "scale(var(--preview-scale,0.28))" }}
+          />
+        ) : (
+          <div className="flex h-64 items-center justify-center text-brand-muted">
+            Preview loading…
+          </div>
+        )}
+      </div>
+      <p className="mt-2 text-xs text-brand-muted">
+        Preview reflects the last saved menu. Save, then refresh here.
+      </p>
+    </>
+  );
+}
+
+/** Avoid hydration mismatch: resolve breakpoint after mount (before paint). */
+function useLgBreakpointReady(): { ready: boolean; lg: boolean } {
+  const [state, setState] = useState<{ ready: boolean; lg: boolean }>({
+    ready: false,
+    lg: false,
+  });
+
+  useLayoutEffect(() => {
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const apply = () =>
+      setState((s) => ({ ...s, ready: true, lg: mq.matches }));
+    apply();
+    mq.addEventListener("change", apply);
+    return () => mq.removeEventListener("change", apply);
+  }, []);
+
+  return { ready: state.ready, lg: state.lg };
+}
 
 export function MenuList() {
   const { token } = useAuth();
@@ -41,15 +126,15 @@ export function MenuList() {
   return (
     <div>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl font-semibold text-white">Menus</h1>
+        <h1 className="text-2xl font-semibold text-brand-cream">Menus</h1>
         <Link
           href="/dashboard/menus/new"
-          className="inline-flex min-h-11 items-center justify-center rounded-lg bg-emerald-500 px-4 text-sm font-semibold text-zinc-950 hover:bg-emerald-400"
+          className="inline-flex min-h-11 items-center justify-center rounded-lg bg-brand-amber px-4 text-sm font-semibold text-brand-deep hover:bg-brand-amber-bright"
         >
           New menu
         </Link>
       </div>
-      <p className="mt-2 text-sm text-zinc-500">
+      <p className="mt-2 text-sm text-brand-muted">
         Build a specials board, generate a video, then add it to a playlist
         from Media.
       </p>
@@ -59,10 +144,10 @@ export function MenuList() {
           <li key={m.id}>
             <Link
               href={`/dashboard/menus/${m.id}`}
-              className="flex min-h-11 flex-col justify-center rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 hover:border-zinc-600"
+              className="flex min-h-11 flex-col justify-center rounded-xl border border-white/10 bg-brand-warm/80 p-4 hover:border-brand-amber/25"
             >
-              <span className="font-medium text-white">{m.title}</span>
-              <span className="text-xs text-zinc-500">
+              <span className="font-medium text-brand-cream">{m.title}</span>
+              <span className="text-xs text-brand-muted">
                 {m.sections?.length ?? 0} section(s) · theme {m.theme}
               </span>
             </Link>
@@ -70,7 +155,7 @@ export function MenuList() {
         ))}
       </ul>
       {rows.length === 0 && !err && (
-        <p className="mt-12 text-center text-sm text-zinc-500">
+        <p className="mt-12 text-center text-sm text-brand-muted">
           No menus yet. Create one to generate chalkboard videos for your TVs.
         </p>
       )}
@@ -106,12 +191,12 @@ export function MenuNew() {
     <div className="mx-auto max-w-lg">
       <Link
         href="/dashboard/menus"
-        className="text-sm text-zinc-500 hover:text-zinc-300"
+        className="text-sm text-brand-muted hover:text-brand-cream"
       >
         ← Menus
       </Link>
-      <h1 className="mt-6 text-2xl font-semibold text-white">New menu</h1>
-      <p className="mt-2 text-sm text-zinc-500">
+      <h1 className="mt-6 text-2xl font-semibold text-brand-cream">New menu</h1>
+      <p className="mt-2 text-sm text-brand-muted">
         We&apos;ll open the editor with a starter layout. You can rename sections
         and items, then generate video.
       </p>
@@ -120,7 +205,7 @@ export function MenuNew() {
         type="button"
         disabled={pending}
         onClick={() => void create()}
-        className="mt-8 min-h-11 w-full rounded-lg bg-emerald-500 px-4 py-3 text-sm font-semibold text-zinc-950 hover:bg-emerald-400 disabled:opacity-50"
+        className="mt-8 min-h-11 w-full rounded-lg bg-brand-amber px-4 py-3 text-sm font-semibold text-brand-deep hover:bg-brand-amber-bright disabled:opacity-50"
       >
         {pending ? "Creating…" : "Create menu"}
       </button>
@@ -143,6 +228,8 @@ export function MenuEditor({ id }: { id: string }) {
   const [jobStatus, setJobStatus] = useState<string | null>(null);
   const [jobErr, setJobErr] = useState<string | null>(null);
   const [mediaId, setMediaId] = useState<string | null>(null);
+  const { ready: previewReady, lg: previewLg } = useLgBreakpointReady();
+  const [mobilePreviewOpen, setMobilePreviewOpen] = useState(false);
 
   const refreshPreview = useCallback(async () => {
     if (!token) return;
@@ -284,7 +371,7 @@ export function MenuEditor({ id }: { id: string }) {
   }
 
   if (!menu && !err) {
-    return <p className="text-zinc-500">Loading…</p>;
+    return <p className="text-brand-muted">Loading…</p>;
   }
   if (err && !menu) {
     return <p className="text-red-400">{err}</p>;
@@ -294,40 +381,40 @@ export function MenuEditor({ id }: { id: string }) {
     <div className="mx-auto max-w-6xl">
       <Link
         href="/dashboard/menus"
-        className="text-sm text-zinc-500 hover:text-zinc-300"
+        className="text-sm text-brand-muted hover:text-brand-cream"
       >
         ← Menus
       </Link>
-      <h1 className="mt-6 text-2xl font-semibold text-white">Edit menu</h1>
+      <h1 className="mt-6 text-2xl font-semibold text-brand-cream">Edit menu</h1>
 
       <div className="mt-8 grid gap-8 lg:grid-cols-2">
         <div className="space-y-6">
           <div>
-            <label className="text-xs text-zinc-500">Title</label>
+            <label className="text-xs text-brand-muted">Title</label>
             <input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="mt-1 min-h-11 w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-white"
+              className="mt-1 min-h-11 w-full rounded-lg border border-white/10 bg-brand-warm px-3 py-2 text-sm text-brand-cream"
             />
           </div>
           <div>
-            <label className="text-xs text-zinc-500">Footer (phone, etc.)</label>
+            <label className="text-xs text-brand-muted">Footer (phone, etc.)</label>
             <input
               value={footer}
               onChange={(e) => setFooter(e.target.value)}
-              className="mt-1 min-h-11 w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-white"
+              className="mt-1 min-h-11 w-full rounded-lg border border-white/10 bg-brand-warm px-3 py-2 text-sm text-brand-cream"
             />
           </div>
 
           {sections.map((sec, si) => (
             <div
               key={si}
-              className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-4"
+              className="rounded-xl border border-white/10 bg-brand-warm/60 p-4"
             >
               <input
                 value={sec.heading}
                 onChange={(e) => updateSectionHeading(si, e.target.value)}
-                className="mb-3 w-full border-b border-zinc-700 bg-transparent text-lg font-semibold text-emerald-400 outline-none"
+                className="mb-3 w-full border-b border-white/10 bg-transparent text-lg font-semibold text-brand-amber outline-none"
               />
               {sec.items.map((it, ii) => (
                 <div key={ii} className="mb-2 flex gap-2">
@@ -335,20 +422,20 @@ export function MenuEditor({ id }: { id: string }) {
                     value={it.name}
                     onChange={(e) => updateItem(si, ii, "name", e.target.value)}
                     placeholder="Item"
-                    className="min-h-11 flex-1 rounded border border-zinc-700 bg-zinc-950 px-2 text-sm text-white"
+                    className="min-h-11 flex-1 rounded border border-white/10 bg-brand-deep px-2 text-sm text-brand-cream"
                   />
                   <input
                     value={it.price}
                     onChange={(e) => updateItem(si, ii, "price", e.target.value)}
                     placeholder="$"
-                    className="min-h-11 w-24 rounded border border-zinc-700 bg-zinc-950 px-2 text-sm text-white"
+                    className="min-h-11 w-24 rounded border border-white/10 bg-brand-deep px-2 text-sm text-brand-cream"
                   />
                 </div>
               ))}
               <button
                 type="button"
                 onClick={() => addItem(si)}
-                className="mt-2 text-sm text-emerald-400 hover:underline"
+                className="mt-2 text-sm text-brand-amber hover:underline"
               >
                 + Add item
               </button>
@@ -358,7 +445,7 @@ export function MenuEditor({ id }: { id: string }) {
           <button
             type="button"
             onClick={addSection}
-            className="text-sm text-zinc-400 hover:text-white"
+            className="text-sm text-brand-text hover:text-brand-cream"
           >
             + Add section
           </button>
@@ -367,32 +454,32 @@ export function MenuEditor({ id }: { id: string }) {
             <button
               type="button"
               onClick={() => void save()}
-              className="min-h-11 rounded-lg border border-zinc-600 px-4 py-2 text-sm font-medium text-zinc-200 hover:bg-zinc-800"
+              className="min-h-11 rounded-lg border border-white/15 px-4 py-2 text-sm font-medium text-brand-cream hover:bg-brand-warm"
             >
               Save
             </button>
             <button
               type="button"
               onClick={() => void renderVideo()}
-              className="min-h-11 rounded-lg bg-emerald-500 px-4 py-2 text-sm font-semibold text-zinc-950 hover:bg-emerald-400"
+              className="min-h-11 rounded-lg bg-brand-amber px-4 py-2 text-sm font-semibold text-brand-deep hover:bg-brand-amber-bright"
             >
               Generate video
             </button>
           </div>
           {saveMsg && (
-            <p className="text-sm text-zinc-400" role="status">
+            <p className="text-sm text-brand-text" role="status">
               {saveMsg}
             </p>
           )}
           {jobStatus && (
-            <p className="text-sm text-zinc-400">
+            <p className="text-sm text-brand-text">
               Render: <strong>{jobStatus}</strong>
               {mediaId && (
                 <>
                   {" "}
-                  — media ID <code className="text-emerald-400">{mediaId}</code>.
+                  — media ID <code className="text-brand-amber">{mediaId}</code>.
                   Open{" "}
-                  <Link href="/dashboard/media" className="text-emerald-400 underline">
+                  <Link href="/dashboard/media" className="text-brand-amber underline">
                     Media
                   </Link>{" "}
                   to confirm, then add to a playlist.
@@ -403,48 +490,45 @@ export function MenuEditor({ id }: { id: string }) {
           {jobErr && <p className="text-sm text-red-400">{jobErr}</p>}
         </div>
 
-        <div className="hidden lg:block">
-          <div className="mb-2 flex items-center justify-between gap-2">
-            <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">
-              Live preview (chalkboard)
-            </p>
-            <button
-              type="button"
-              onClick={() => void refreshPreview()}
-              className="rounded-lg border border-zinc-700 px-3 py-1.5 text-xs text-zinc-300 hover:bg-zinc-800"
+        <div className="min-w-0">
+          {!previewReady ? (
+            <div
+              className="aspect-video animate-pulse rounded-xl bg-white/5"
+              aria-hidden
+            />
+          ) : previewLg ? (
+            <ChalkPreviewPanel
+              previewHtml={previewHtml}
+              onRefresh={refreshPreview}
+            />
+          ) : (
+            <details
+              className="group rounded-xl border border-white/10 bg-brand-warm/30 p-4 open:border-brand-amber/25"
+              onToggle={(e) =>
+                setMobilePreviewOpen((e.target as HTMLDetailsElement).open)
+              }
             >
-              Refresh preview
-            </button>
-          </div>
-          <div className="aspect-video w-full overflow-hidden rounded-xl border border-zinc-800 bg-black">
-            {previewHtml ? (
-              <iframe
-                title="Preview"
-                srcDoc={previewHtml}
-                sandbox="allow-scripts allow-same-origin"
-                className="h-[1080px] w-[1920px] border-0 origin-top-left"
-                style={{ transform: "scale(var(--preview-scale,0.28))" }}
-                ref={(el) => {
-                  if (!el) return;
-                  const parent = el.parentElement;
-                  if (!parent) return;
-                  const ro = new ResizeObserver(([entry]) => {
-                    const s = entry.contentRect.width / 1920;
-                    parent.style.setProperty("--preview-scale", String(s));
-                    parent.style.height = `${1080 * s}px`;
-                  });
-                  ro.observe(parent);
-                }}
-              />
-            ) : (
-              <div className="flex h-64 items-center justify-center text-zinc-600">
-                Preview loading…
-              </div>
-            )}
-          </div>
-          <p className="mt-2 text-xs text-zinc-600">
-            Preview reflects the last saved menu. Save, then refresh here.
-          </p>
+              <summary className="cursor-pointer list-none text-sm font-medium text-brand-cream">
+                <span className="flex items-center justify-between gap-2">
+                  Chalkboard preview
+                  <span className="text-xs font-normal text-brand-muted group-open:hidden">
+                    Show
+                  </span>
+                  <span className="hidden text-xs font-normal text-brand-muted group-open:inline">
+                    Hide
+                  </span>
+                </span>
+              </summary>
+              {mobilePreviewOpen ? (
+                <div className="mt-4">
+                  <ChalkPreviewPanel
+                    previewHtml={previewHtml}
+                    onRefresh={refreshPreview}
+                  />
+                </div>
+              ) : null}
+            </details>
+          )}
         </div>
       </div>
     </div>

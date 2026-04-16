@@ -3,13 +3,70 @@
 @tailwind utilities;
 
 :root {
-  --background: #09090b;
-  --foreground: #fafafa;
+  /* Concept 02 — Screen Pulse */
+  --c2-deep: #0d0806;
+  --c2-warm: #1a1410;
+  --c2-amber: #ffaa00;
+  --c2-violet: #7b61ff;
+  --c2-cream: #fff6e8;
+  --c2-sidebar: #0a0604;
+  --c2-bar: #140f0a;
+  --brand-text: #c8cedf;
+  --brand-muted: #3e465a;
+  --brand-signal: #ff3d71;
+
+  --background: var(--c2-deep);
+  --foreground: var(--c2-cream);
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
+  -webkit-tap-highlight-color: rgba(255, 170, 0, 0.12);
+}
+
+@layer utilities {
+  .scrollbar-none {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@layer components {
+  .btn-brand-primary {
+    @apply inline-flex items-center justify-center rounded-lg bg-brand-amber px-4 py-2.5 text-sm font-semibold text-brand-deep transition hover:bg-brand-amber-bright disabled:opacity-50;
+  }
+  .btn-brand-secondary {
+    @apply inline-flex items-center justify-center rounded-lg border border-brand-amber/25 bg-transparent px-4 py-2.5 text-sm font-medium text-brand-cream transition hover:border-brand-amber/50 hover:bg-brand-amber/5;
+  }
+  .btn-brand-ghost {
+    @apply inline-flex items-center justify-center rounded-lg border border-white/10 bg-brand-warm/40 px-3 py-2 text-sm font-medium text-brand-cream transition hover:bg-brand-warm hover:border-brand-amber/20;
+  }
+  .card-brand {
+    @apply rounded-xl border border-brand-amber/10 bg-brand-amber/[0.04] p-4;
+  }
+  .card-brand-violet {
+    @apply rounded-xl border border-brand-violet/10 bg-brand-violet/[0.04] p-4;
+  }
+  .input-brand {
+    @apply mt-1 w-full rounded-lg border border-white/10 bg-brand-warm px-3 py-2 text-sm text-brand-cream outline-none ring-brand-amber/0 transition placeholder:text-brand-muted focus:border-brand-amber/40 focus:ring-2 focus:ring-brand-amber/25;
+  }
+  .label-brand {
+    @apply text-xs font-medium text-brand-muted;
+  }
+  .page-title-brand {
+    @apply font-heading text-2xl font-semibold tracking-tight text-brand-cream;
+  }
+  .micro-label-brand {
+    @apply font-mono text-[10px] font-normal uppercase tracking-widest text-brand-amber;
+  }
 }
 
 @layer utilities {

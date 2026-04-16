@@ -8,3 +8,8 @@ __pycache__/
 api/storage/
 web/.env.local
 .DS_Store
+
+# Local / personal artifacts (not part of the app)
+.claude/
+KGC_10Year_Financial_Roadmap_v3.html
+kemisdisplay-brand-identity.html

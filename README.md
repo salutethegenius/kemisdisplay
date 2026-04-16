@@ -73,7 +73,7 @@ Optional on the API host for menu renders: **ffmpeg** on `PATH`, and **Playwrigh
 
 ### Flat routing
 
-Nested URLs such as `/dashboard/screens/...` and `/display/...` are implemented with **middleware rewrites** to a shallow `app/` tree. The browser URL stays clean; dashboard sub-routes are handled by `DashboardRouter` on the client.
+`/dashboard/screens/...` and similar paths use a **middleware rewrite** to `/dashboard` so the `app/` tree stays shallow; `DashboardRouter` handles the path on the client. **Display** URLs use the real route `app/display/[[...slug]]` (e.g. `/display/{slug}?token=…`) so metadata can stay private (`noindex`) while the URL stays shareable from the dashboard.
 
 ## API highlights
 
@@ -95,5 +95,6 @@ When `ffprobe` is installed on the API host, video duration is detected for disp
 - Deploy walkthrough: **[DEPLOY.md](DEPLOY.md)** (Railway API + Vercel web, env vars, volumes, migrations).
 - Point **kemisdisplay.com** at Vercel; set `NEXT_PUBLIC_API_URL` to your API origin (e.g. `https://api.kemisdisplay.com`).
 - Restrict `CORS_ORIGINS` to the real web origin (comma-separated; include preview URLs if you use them).
+- If videos are served from **Cloudflare R2** (public bucket URLs in playlists), configure the bucket **CORS** to allow `GET` from your web origins (for example `https://www.kemisdisplay.com` and `https://kemisdisplay.com`). Otherwise some browsers and TVs fail to load `<video src="…">` with no visible API error.
 - Set `DEV_BYPASS_BILLING=0` and wire **KemisPay** for subscriptions (Phase 3).
 - Railway’s `DATABASE_URL` may use the `postgres://` scheme; the API normalizes it to `postgresql://` for SQLAlchemy.
