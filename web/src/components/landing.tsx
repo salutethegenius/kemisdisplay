@@ -4,22 +4,26 @@ import { BrandLockup } from "@/components/brand-lockup";
 export function Landing() {
   return (
     <div className="min-h-screen min-h-[100dvh] bg-gradient-to-b from-brand-deep via-brand-bar to-brand-warm">
-      <header className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4 px-4 pb-6 pt-[max(1rem,env(safe-area-inset-top))] sm:px-6">
-        <BrandLockup markSize={40} href="/" />
-        <div className="flex gap-4 text-sm">
+      <header className="mx-auto flex max-w-5xl flex-nowrap items-center justify-between gap-2 px-4 pb-6 pt-[max(1rem,env(safe-area-inset-top))] sm:gap-4 sm:px-6">
+        <BrandLockup markSize={36} className="min-w-0 sm:gap-3" href="/" />
+        <nav
+          aria-label="Account"
+          className="flex shrink-0 items-center gap-2 sm:gap-4"
+        >
           <Link
             href="/login"
-            className="text-brand-muted transition hover:text-brand-cream"
+            className="whitespace-nowrap text-sm text-brand-muted transition hover:text-brand-cream"
           >
             Log in
           </Link>
           <Link
             href="/signup"
-            className="rounded-full bg-brand-amber px-4 py-2 font-semibold text-brand-deep transition hover:bg-brand-amber-bright"
+            className="rounded-full bg-brand-amber px-3 py-2 text-xs font-semibold text-brand-deep transition hover:bg-brand-amber-bright sm:px-4 sm:text-sm"
           >
-            Start free trial
+            <span className="sm:hidden">Start trial</span>
+            <span className="hidden sm:inline">Start free trial</span>
           </Link>
-        </div>
+        </nav>
       </header>
 
       <main className="mx-auto max-w-5xl px-4 pb-24 pt-8 sm:px-6 sm:pt-12">

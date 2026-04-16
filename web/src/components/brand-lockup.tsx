@@ -24,7 +24,7 @@ export function BrandLockup({
           <span className="text-brand-amber">Kemis</span>
           <span className="text-brand-cream">Display</span>
         </div>
-        <p className="mt-0.5 font-sans text-[10px] font-medium uppercase tracking-[0.18em] text-brand-amber/70 sm:text-[11px]">
+        <p className="mt-0.5 hidden font-sans text-[10px] font-medium uppercase tracking-[0.18em] text-brand-amber/70 sm:block sm:text-[11px]">
           Digital Signage Platform
         </p>
       </div>
