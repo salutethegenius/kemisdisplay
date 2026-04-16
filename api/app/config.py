@@ -1,5 +1,9 @@
+import logging
+
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+_config_logger = logging.getLogger("kemisdisplay.config")
 
 
 def normalize_postgres_dsn(url: str) -> str:
@@ -37,6 +41,16 @@ class Settings(BaseSettings):
     r2_public_url: str = ""
     # Videos larger than this (MB) use Mux when Mux is enabled; smaller use R2 when R2 is enabled.
     video_mux_threshold_mb: int = 50
+
+    @field_validator("jwt_secret", mode="after")
+    @classmethod
+    def _warn_default_jwt_secret(cls, v: str) -> str:
+        if v == "dev-secret-change-in-production":
+            _config_logger.critical(
+                "SECURITY: JWT_SECRET is set to the insecure default value. "
+                "Set a strong random secret via the JWT_SECRET environment variable before deploying."
+            )
+        return v
 
     @field_validator("database_url", mode="before")
     @classmethod

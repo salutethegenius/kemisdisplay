@@ -22,6 +22,7 @@ router = APIRouter()
 
 ALLOWED_IMAGE = {".jpg", ".jpeg", ".png", ".gif", ".webp"}
 ALLOWED_VIDEO = {".mp4", ".webm", ".mov"}
+MAX_UPLOAD_BYTES = 100 * 1024 * 1024  # 100 MB absolute ceiling
 
 
 def _guess_type(filename: str) -> str | None:
@@ -63,6 +64,8 @@ async def upload_media(
         )
     data = await file.read()
     size = len(data)
+    if size > MAX_UPLOAD_BYTES:
+        raise HTTPException(status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, "File exceeds 100 MB limit.")
     cap = max_storage_bytes_for(user)
     used = sum_user_media_bytes(db, user.id)
     if used + size > cap:

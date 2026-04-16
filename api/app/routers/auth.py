@@ -1,6 +1,8 @@
 from datetime import datetime, timedelta, timezone
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -12,6 +14,7 @@ from app.security import create_access_token, hash_password, verify_password
 from app.services.limits import effective_tier
 
 router = APIRouter()
+limiter = Limiter(key_func=get_remote_address)
 
 
 def _user_out(u: User) -> UserOut:
@@ -27,10 +30,11 @@ def _user_out(u: User) -> UserOut:
 
 
 @router.post("/signup", response_model=TokenResponse)
-def signup(body: SignupBody, db: Session = Depends(get_db)) -> TokenResponse:
+@limiter.limit("5/minute")
+def signup(request: Request, body: SignupBody, db: Session = Depends(get_db)) -> TokenResponse:
     exists = db.scalar(select(User.id).where(User.email == body.email.lower().strip()))
     if exists:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Email already registered")
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Unable to create account with that email")
     trial_end = datetime.now(timezone.utc) + timedelta(days=14)
     user = User(
         email=body.email.lower().strip(),
@@ -47,7 +51,8 @@ def signup(body: SignupBody, db: Session = Depends(get_db)) -> TokenResponse:
 
 
 @router.post("/login", response_model=TokenResponse)
-def login(body: LoginBody, db: Session = Depends(get_db)) -> TokenResponse:
+@limiter.limit("5/minute")
+def login(request: Request, body: LoginBody, db: Session = Depends(get_db)) -> TokenResponse:
     user = db.scalar(select(User).where(User.email == body.email.lower().strip()))
     if not user or not verify_password(body.password, user.hashed_password):
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid email or password")
