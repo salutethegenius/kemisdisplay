@@ -109,13 +109,13 @@ function ScreenList() {
             <div className="flex flex-wrap gap-2">
               <Link
                 href={`/dashboard/screens/${s.id}/playlist`}
-                className="inline-flex min-h-11 min-w-[88px] items-center justify-center rounded-lg border border-white/15 px-3 text-sm text-brand-cream hover:bg-brand-warm"
+                className="inline-flex min-h-11 flex-1 items-center justify-center rounded-lg border border-white/15 px-3 text-sm text-brand-cream hover:bg-brand-warm sm:flex-none sm:min-w-[88px]"
               >
                 Playlist
               </Link>
               <Link
                 href={`/dashboard/screens/${s.id}`}
-                className="inline-flex min-h-11 min-w-[88px] items-center justify-center rounded-lg border border-white/15 px-3 text-sm text-brand-cream hover:bg-brand-warm"
+                className="inline-flex min-h-11 flex-1 items-center justify-center rounded-lg border border-white/15 px-3 text-sm text-brand-cream hover:bg-brand-warm sm:flex-none sm:min-w-[88px]"
               >
                 Settings
               </Link>
@@ -927,8 +927,8 @@ function AdminUsers() {
       </div>
 
       {editing && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-          <div className="w-full max-w-md rounded-xl border border-white/10 bg-brand-warm p-6 shadow-xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/70 p-4">
+          <div className="my-auto w-full max-w-md rounded-xl border border-white/10 bg-brand-warm p-5 shadow-xl sm:p-6">
             <h2 className="text-lg font-semibold text-brand-cream">Edit user</h2>
             <p className="mt-1 font-mono text-xs text-brand-muted">{editing.email}</p>
             <div className="mt-4 space-y-3">

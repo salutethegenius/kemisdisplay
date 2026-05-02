@@ -93,6 +93,9 @@ class Menu(Base):
     sections: Mapped[list] = mapped_column(
         JSONB, nullable=False, server_default=sa_text("'[]'::jsonb")
     )
+    current_media_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("media.id", ondelete="SET NULL"), nullable=True
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=_utcnow
     )
@@ -103,6 +106,7 @@ class Menu(Base):
     user: Mapped["User"] = relationship(back_populates="menus")
     screen: Mapped[Optional["Screen"]] = relationship(back_populates="menus")
     render_jobs: Mapped[List["RenderJob"]] = relationship(back_populates="menu")
+    current_media: Mapped[Optional["Media"]] = relationship(foreign_keys=[current_media_id])
 
 
 class RenderJob(Base):
