@@ -1,3 +1,14 @@
 # Used when Railway builder is NIXPACKS. Prefer Nix ffmpeg over apt to avoid glibc clashes.
+
+[variables]
+# Bake Playwright's chromium download into /app so the binary survives the
+# build->runtime image copy (the default ~/.cache/ms-playwright is not preserved).
+PLAYWRIGHT_BROWSERS_PATH = "/app/.playwright-browsers"
+
 [phases.setup]
 nixPkgs = ["...", "ffmpeg"]
+
+[phases.build]
+# Runs after `pip install -r requirements.txt`. Downloads chromium-headless-shell
+# into PLAYWRIGHT_BROWSERS_PATH; menu_render reads from the same env var at runtime.
+cmds = ["python -m playwright install chromium"]
