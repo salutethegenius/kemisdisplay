@@ -222,7 +222,9 @@ export function MenuEditor({ id }: { id: string }) {
     { heading: string; items: { name: string; price: string }[] }[]
   >([]);
   const [err, setErr] = useState<string | null>(null);
-  const [saveMsg, setSaveMsg] = useState<string | null>(null);
+  const [phase, setPhase] = useState<
+    "idle" | "saving" | "rendering" | "done"
+  >("idle");
   const [previewHtml, setPreviewHtml] = useState<string | null>(null);
   const [jobId, setJobId] = useState<string | null>(null);
   const [jobStatus, setJobStatus] = useState<string | null>(null);
@@ -265,7 +267,6 @@ export function MenuEditor({ id }: { id: string }) {
 
   async function save(): Promise<boolean> {
     if (!token) return false;
-    setSaveMsg(null);
     const res = await apiFetch(`/menus/${id}`, {
       method: "PUT",
       token,
@@ -278,33 +279,38 @@ export function MenuEditor({ id }: { id: string }) {
     });
     if (!res.ok) {
       const d = await res.json().catch(() => ({}));
-      setSaveMsg(String(d.detail || "Save failed"));
+      setJobErr(String(d.detail || "Save failed"));
       return false;
     }
     setMenu(await res.json());
-    setSaveMsg("Saved");
     void refreshPreview();
     return true;
   }
 
-  async function renderVideo() {
+  async function saveAndRender() {
     if (!token) return;
     setJobErr(null);
     setMediaId(null);
     setJobStatus(null);
+    setPhase("saving");
+
     const saved = await save();
     if (!saved) {
-      setJobErr("Fix errors above, then try Generate again.");
+      setPhase("idle");
       return;
     }
+
+    setPhase("rendering");
     const res = await apiFetch(`/menus/${id}/render`, { method: "POST", token });
     const data = await res.json().catch(() => ({}));
     if (res.status === 503) {
       setJobErr(String(data.detail || "Renderer busy — try again shortly."));
+      setPhase("idle");
       return;
     }
     if (!res.ok) {
       setJobErr(String(data.detail || "Could not start render"));
+      setPhase("idle");
       return;
     }
     setJobId(data.job_id);
@@ -320,10 +326,12 @@ export function MenuEditor({ id }: { id: string }) {
       setJobStatus(j.status);
       if (j.status === "succeeded" && j.media_id) {
         setMediaId(j.media_id);
+        setPhase("done");
         clearInterval(t);
       }
       if (j.status === "failed") {
         setJobErr(j.error_message || "Render failed");
+        setPhase("idle");
         clearInterval(t);
       }
     }, 2000);
@@ -453,38 +461,33 @@ export function MenuEditor({ id }: { id: string }) {
           <div className="flex flex-wrap gap-3">
             <button
               type="button"
-              onClick={() => void save()}
-              className="min-h-11 rounded-lg border border-white/15 px-4 py-2 text-sm font-medium text-brand-cream hover:bg-brand-warm"
+              onClick={() => void saveAndRender()}
+              disabled={phase === "saving" || phase === "rendering"}
+              className="min-h-11 w-full rounded-lg bg-brand-amber px-4 py-2 text-sm font-semibold text-brand-deep hover:bg-brand-amber-bright disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
             >
-              Save
-            </button>
-            <button
-              type="button"
-              onClick={() => void renderVideo()}
-              className="min-h-11 rounded-lg bg-brand-amber px-4 py-2 text-sm font-semibold text-brand-deep hover:bg-brand-amber-bright"
-            >
-              Generate video
+              {phase === "saving"
+                ? "Saving…"
+                : phase === "rendering"
+                  ? "Updating video…"
+                  : "Save & update video"}
             </button>
           </div>
-          {saveMsg && (
+          {phase === "done" && (
             <p className="text-sm text-brand-text" role="status">
-              {saveMsg}
-            </p>
-          )}
-          {jobStatus && (
-            <p className="text-sm text-brand-text">
-              Render: <strong>{jobStatus}</strong>
+              ✓ Saved and video updated. Any screen showing this menu picks up
+              the new video on its next check (~60s).
               {mediaId && (
                 <>
                   {" "}
-                  — media ID <code className="text-brand-amber">{mediaId}</code>.
-                  Open{" "}
-                  <Link href="/dashboard/media" className="text-brand-amber underline">
-                    Media
-                  </Link>{" "}
-                  to confirm, then add to a playlist.
+                  Media ID <code className="text-brand-amber">{mediaId}</code>.
                 </>
               )}
+            </p>
+          )}
+          {phase === "rendering" && jobStatus && (
+            <p className="text-sm text-brand-text" role="status">
+              Rendering: <strong>{jobStatus}</strong>… (this usually takes
+              30–60s)
             </p>
           )}
           {jobErr && <p className="text-sm text-red-400">{jobErr}</p>}

@@ -155,6 +155,8 @@ export function DisplayPlayer({ slug, token }: { slug: string; token: string }) 
     }
   }, [slug]);
 
+  const singleItem = items.length === 1;
+
   useEffect(() => {
     if (timerRef.current) clearTimeout(timerRef.current);
     if (!item) return;
@@ -165,12 +167,17 @@ export function DisplayPlayer({ slug, token }: { slug: string; token: string }) 
         v.currentTime = 0;
         void v.play().catch(() => {});
       }
+      // Single video item: let the <video loop> attribute handle continuous playback.
+      if (singleItem) return;
       const capMs = Math.min(item.duration_seconds, 300) * 1000;
       timerRef.current = setTimeout(() => advance(), capMs);
       return () => {
         if (timerRef.current) clearTimeout(timerRef.current);
       };
     }
+
+    // Single image item: no timer — it just stays.
+    if (singleItem) return;
 
     timerRef.current = setTimeout(
       () => advance(),
@@ -179,7 +186,7 @@ export function DisplayPlayer({ slug, token }: { slug: string; token: string }) 
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [item, advance]);
+  }, [item, advance, singleItem]);
 
   if (loading) {
     return (
@@ -224,9 +231,10 @@ export function DisplayPlayer({ slug, token }: { slug: string; token: string }) 
             className="h-full w-full object-contain"
             muted
             playsInline
-            loop={false}
+            loop={singleItem}
             onError={onMediaFailed}
             onEnded={() => {
+              if (singleItem) return;
               if (timerRef.current) {
                 clearTimeout(timerRef.current);
                 timerRef.current = null;

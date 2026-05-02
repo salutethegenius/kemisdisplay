@@ -68,27 +68,28 @@ def _apply_asset_ready(db: Session, data: dict[str, Any]) -> None:
         media.storage_provider = "mux"
 
 
-def _apply_static_rendition_ready(db: Session, data: dict[str, Any]) -> None:
+def _apply_static_rendition_ready(db: Session, data: dict[str, Any]) -> bool:
+    """Returns True iff the media just transitioned to ready (caller may swap)."""
     name = str(data.get("name") or "")
     if "highest" not in name.lower():
-        return
+        return False
 
     asset_id = str(data.get("asset_id") or "")
     if not asset_id:
-        return
+        return False
 
     media = db.query(Media).filter(Media.mux_asset_id == asset_id).one_or_none()
     if not media:
         logger.warning("Mux static_rendition.ready unknown asset_id=%s", asset_id)
-        return
+        return False
 
     if media.mux_status == "ready" and "stream.mux.com" in (media.file_url or ""):
-        return
+        return False
 
     playback_id = media.mux_playback_id or _first_public_playback_id(data)
     if not playback_id:
         logger.warning("Mux static_rendition.ready no playback_id for media %s", media.id)
-        return
+        return False
 
     media.mux_playback_id = playback_id
     media.file_url = f"https://stream.mux.com/{playback_id}/highest.mp4"
@@ -97,6 +98,7 @@ def _apply_static_rendition_ready(db: Session, data: dict[str, Any]) -> None:
     media.mux_status = "ready"
     if media.storage_provider is None:
         media.storage_provider = "mux"
+    return True
 
 
 def _apply_asset_errored(db: Session, data: dict[str, Any]) -> None:
@@ -156,8 +158,22 @@ async def mux_webhook(request: Request) -> dict[str, str]:
             "video.asset.static_rendition.ready",
             "video.asset.static_renditions.ready",
         ):
-            _apply_static_rendition_ready(db, data)
+            became_ready = _apply_static_rendition_ready(db, data)
             db.commit()
+            if became_ready:
+                asset_id = str(data.get("asset_id") or "")
+                m = (
+                    db.query(Media).filter(Media.mux_asset_id == asset_id).one_or_none()
+                    if asset_id
+                    else None
+                )
+                if m is not None:
+                    from app.services.menu_render import swap_menu_current_media
+
+                    try:
+                        swap_menu_current_media(db, m.id)
+                    except Exception:
+                        logger.exception("swap_menu_current_media (mux) failed for %s", m.id)
         elif event_type == "video.asset.errored":
             _apply_asset_errored(db, data)
             db.commit()

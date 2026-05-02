@@ -9,15 +9,68 @@ from datetime import datetime, timezone
 from pathlib import Path
 from uuid import UUID
 
+import sqlalchemy as sa
+from sqlalchemy.orm import Session
+
 from app.config import settings
-from app.models import Media, Menu, RenderJob
+from app.models import Media, Menu, PlaylistItem, RenderJob
 from app.services.menu_html import build_chalkboard_html
 from app.services.video_probe import probe_video_duration_seconds
-from app.services.video_router import process_video
+from app.services.video_router import delete_stored_video, process_video
 
 logger = logging.getLogger("kemisdisplay")
 
 _RENDER_SEM = threading.BoundedSemaphore(1)
+
+
+def swap_menu_current_media(db: Session, new_media_id: UUID) -> None:
+    """Point the menu owning ``new_media_id`` at it, repoint playlist items, drop the old media.
+
+    Called in two places:
+      1. menu_render success path, when the video is immediately playable (R2 / local).
+      2. Mux webhook ``static_rendition.ready``, once Mux has produced a playable file_url.
+
+    Best-effort cleanup: storage delete failures are logged but don't roll back the swap.
+    """
+    job = (
+        db.query(RenderJob)
+        .filter(RenderJob.media_id == new_media_id, RenderJob.status == "succeeded")
+        .order_by(RenderJob.updated_at.desc())
+        .first()
+    )
+    if not job:
+        return
+    menu = db.get(Menu, job.menu_id)
+    if not menu:
+        return
+    old_media_id = menu.current_media_id
+    if old_media_id == new_media_id:
+        return
+
+    menu.current_media_id = new_media_id
+    if old_media_id is not None:
+        db.execute(
+            sa.update(PlaylistItem)
+            .where(PlaylistItem.media_id == old_media_id)
+            .values(media_id=new_media_id)
+        )
+    db.commit()
+
+    if old_media_id is None or old_media_id == new_media_id:
+        return
+    old_media = db.get(Media, old_media_id)
+    if not old_media:
+        return
+    try:
+        delete_stored_video(old_media)
+    except Exception:
+        logger.exception("Failed to delete old media bytes %s", old_media_id)
+    try:
+        db.delete(old_media)
+        db.commit()
+    except Exception:
+        logger.exception("Failed to delete old media row %s", old_media_id)
+        db.rollback()
 
 
 def try_acquire_render_slot() -> bool:
@@ -188,6 +241,14 @@ def run_menu_render_job(job_id: UUID) -> None:
         job.updated_at = datetime.now(timezone.utc)
         db.commit()
         logger.info("Menu render job %s -> media %s", job_id, media.id)
+
+        # Mux uploads aren't playable until static_rendition.ready fires —
+        # defer the swap to the webhook so screens never point at an empty file_url.
+        if result.storage_provider != "mux":
+            try:
+                swap_menu_current_media(db, media.id)
+            except Exception:
+                logger.exception("swap_menu_current_media failed for media %s", media.id)
 
     except Exception as e:
         logger.exception("render job %s", job_id)
