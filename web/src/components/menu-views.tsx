@@ -371,11 +371,32 @@ export function MenuEditor({ id }: { id: string }) {
     );
   }
 
+  function removeItem(si: number, ii: number) {
+    setSections((s) =>
+      s.map((sec, j) =>
+        j === si
+          ? { ...sec, items: sec.items.filter((_, k) => k !== ii) }
+          : sec,
+      ),
+    );
+  }
+
   function addSection() {
     setSections((s) => [
       ...s,
       { heading: "Section", items: [{ name: "", price: "" }] },
     ]);
+  }
+
+  function removeSection(si: number) {
+    const sec = sections[si];
+    if (!sec) return;
+    const label = sec.heading.trim() || "this section";
+    const ok = window.confirm(
+      `Remove "${label}" and its ${sec.items.length} item${sec.items.length === 1 ? "" : "s"}?`,
+    );
+    if (!ok) return;
+    setSections((s) => s.filter((_, j) => j !== si));
   }
 
   if (!menu && !err) {
@@ -419,11 +440,20 @@ export function MenuEditor({ id }: { id: string }) {
               key={si}
               className="rounded-xl border border-white/10 bg-brand-warm/60 p-4"
             >
-              <input
-                value={sec.heading}
-                onChange={(e) => updateSectionHeading(si, e.target.value)}
-                className="mb-3 w-full border-b border-white/10 bg-transparent text-lg font-semibold text-brand-amber outline-none"
-              />
+              <div className="mb-3 flex items-center gap-2 border-b border-white/10">
+                <input
+                  value={sec.heading}
+                  onChange={(e) => updateSectionHeading(si, e.target.value)}
+                  className="min-w-0 flex-1 bg-transparent text-lg font-semibold text-brand-amber outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={() => removeSection(si)}
+                  className="shrink-0 text-xs text-red-400 hover:text-red-300"
+                >
+                  Remove section
+                </button>
+              </div>
               {sec.items.map((it, ii) => (
                 <div key={ii} className="mb-2 flex gap-2">
                   <input
@@ -436,8 +466,16 @@ export function MenuEditor({ id }: { id: string }) {
                     value={it.price}
                     onChange={(e) => updateItem(si, ii, "price", e.target.value)}
                     placeholder="$"
-                    className="min-h-11 w-24 rounded border border-white/10 bg-brand-deep px-2 text-sm text-brand-cream"
+                    className="min-h-11 w-20 rounded border border-white/10 bg-brand-deep px-2 text-sm text-brand-cream"
                   />
+                  <button
+                    type="button"
+                    onClick={() => removeItem(si, ii)}
+                    aria-label="Remove item"
+                    className="flex h-11 w-9 shrink-0 items-center justify-center rounded border border-white/10 text-brand-muted hover:border-red-400/40 hover:text-red-400"
+                  >
+                    ×
+                  </button>
                 </div>
               ))}
               <button
