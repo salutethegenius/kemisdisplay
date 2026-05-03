@@ -74,6 +74,23 @@ def get_onboarding(
         )
     )
 
+    first_screen = db.scalars(
+        select(Screen)
+        .where(Screen.user_id == user.id)
+        .order_by(Screen.created_at.asc())
+        .limit(1)
+    ).first()
+    playlist_href = (
+        f"/dashboard/screens/{first_screen.id}/playlist"
+        if first_screen
+        else "/dashboard/screens/new"
+    )
+    screen_settings_href = (
+        f"/dashboard/screens/{first_screen.id}"
+        if first_screen
+        else "/dashboard/screens/new"
+    )
+
     steps = [
         OnboardingStep(
             id="screen",
@@ -96,7 +113,7 @@ def get_onboarding(
             title="Add it to your screen",
             description="Pick what plays on the TV and how long each item shows.",
             cta_label="Open playlist",
-            cta_href="/dashboard",
+            cta_href=playlist_href,
             done=bool(has_playlist_item),
         ),
         OnboardingStep(
@@ -104,7 +121,7 @@ def get_onboarding(
             title="You're on the air!",
             description="Open your screen URL on a TV browser to start playing.",
             cta_label="See screen URL",
-            cta_href="/dashboard",
+            cta_href=screen_settings_href,
             done=bool(is_on_air),
         ),
     ]

@@ -403,6 +403,7 @@ function ScreenSettings({ id }: { id: string }) {
 }
 
 function PlaylistEditor({ id }: { id: string }) {
+  const router = useRouter();
   const { token } = useAuth();
   const [rows, setRows] = useState<PlaylistRow[]>([]);
   const [media, setMedia] = useState<MediaRow[]>([]);
@@ -478,6 +479,7 @@ function PlaylistEditor({ id }: { id: string }) {
       return;
     }
     setRows(await res.json());
+    router.push("/dashboard");
   }
 
   const used = new Set(rows.map((r) => r.media_id));
@@ -538,7 +540,15 @@ function PlaylistEditor({ id }: { id: string }) {
         </select>
         <button
           type="button"
+          disabled={!pick}
           onClick={addMedia}
+          className="min-h-11 rounded-lg border border-white/15 px-3 py-2 text-sm text-brand-cream hover:bg-brand-warm disabled:cursor-not-allowed disabled:opacity-40 sm:shrink-0"
+        >
+          Add to list
+        </button>
+        <button
+          type="button"
+          onClick={() => router.push("/dashboard/media")}
           className="min-h-11 rounded-lg border border-white/15 px-3 py-2 text-sm text-brand-cream hover:bg-brand-warm sm:shrink-0"
         >
           Add
