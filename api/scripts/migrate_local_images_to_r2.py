@@ -3,12 +3,19 @@
 Selects ``Media`` rows with ``type='image'`` and ``storage_provider IS NULL``
 (legacy URLs served from ``/files/{user_id}/{filename}``).
 
-Usage (from ``api/`` with venv active and ``DATABASE_URL`` in ``.env``)::
+Usage (from ``api/`` with venv active and ``DATABASE_URL`` in ``.env``).
 
-    python -m scripts.migrate_local_images_to_r2           # dry-run
-    python -m scripts.migrate_local_images_to_r2 --apply # upload, DB update, delete local file
+Dry-run (default — no ``--apply``)::
 
-Requires R2 env vars for ``--apply`` (same as ``settings.r2_enabled``).
+    python -m scripts.migrate_local_images_to_r2
+
+Apply (upload, update DB, delete local file)::
+
+    python -m scripts.migrate_local_images_to_r2 --apply
+
+Do not append shell comments on the same line as the command; some environments
+pass ``#`` through to Python. Requires R2 env vars for ``--apply`` (see
+``settings.r2_enabled``).
 """
 
 from __future__ import annotations
