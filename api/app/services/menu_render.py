@@ -1,4 +1,4 @@
-"""Playwright + FFmpeg: menu HTML -> 10s H.264 MP4."""
+"""Playwright: menu HTML -> full-page JPEG on R2 (default) or 10s H.264 MP4 (legacy)."""
 
 import logging
 import shutil
@@ -15,6 +15,7 @@ from sqlalchemy.orm import Session
 from app.config import settings
 from app.models import Media, Menu, PlaylistItem, RenderJob
 from app.services.menu_html import build_chalkboard_html
+from app.services.r2_storage import upload_to_r2
 from app.services.video_probe import probe_video_duration_seconds
 from app.services.video_router import delete_stored_video, process_video
 
@@ -84,7 +85,7 @@ def release_render_slot() -> None:
         pass
 
 
-def run_menu_render_job(job_id: UUID) -> None:
+def run_menu_render_job(job_id: UUID, as_image: bool = True) -> None:
     """Background worker: owns DB session and always releases semaphore."""
     from app.database import SessionLocal
 
@@ -126,6 +127,77 @@ def run_menu_render_job(job_id: UUID) -> None:
             job.updated_at = datetime.now(timezone.utc)
             db.commit()
             logger.error("playwright missing: %s", e)
+            return
+
+        if as_image:
+            if not settings.r2_enabled:
+                job.status = "failed"
+                job.error_message = (
+                    "Image menu export requires Cloudflare R2 (same as image uploads). "
+                    "Configure R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, "
+                    "R2_PUBLIC_URL, and R2_BUCKET_NAME."
+                )
+                job.updated_at = datetime.now(timezone.utc)
+                db.commit()
+                return
+
+            jpeg_path = job_dir / "menu.jpg"
+            with sync_playwright() as p:
+                browser = p.chromium.launch(
+                    headless=True,
+                    args=["--no-sandbox", "--disable-dev-shm-usage"],
+                )
+                context = browser.new_context(
+                    viewport={"width": 1920, "height": 1080},
+                )
+                page = context.new_page()
+                page.goto(html_path.as_uri(), wait_until="networkidle", timeout=120_000)
+                page.wait_for_timeout(2000)
+                page.screenshot(
+                    path=str(jpeg_path),
+                    type="jpeg",
+                    quality=88,
+                    full_page=True,
+                )
+                context.close()
+                browser.close()
+
+            if not jpeg_path.is_file():
+                job.status = "failed"
+                job.error_message = "Screenshot failed (no JPEG written)."
+                job.updated_at = datetime.now(timezone.utc)
+                db.commit()
+                return
+
+            size = jpeg_path.stat().st_size
+            media_id = uuid_lib.uuid4()
+            key = f"images/{media_id}.jpg"
+            file_url = upload_to_r2(str(jpeg_path), key, "image/jpeg")
+
+            media = Media(
+                id=media_id,
+                user_id=job.user_id,
+                filename=f"menu-{menu.id}.jpg",
+                file_url=file_url,
+                type="image",
+                duration_seconds=30,
+                size_bytes=size,
+                storage_provider="r2",
+                r2_key=key,
+                thumbnail_url=file_url,
+            )
+            db.add(media)
+            job.media_id = media.id
+            job.status = "succeeded"
+            job.error_message = None
+            job.updated_at = datetime.now(timezone.utc)
+            db.commit()
+            logger.info("Menu image job %s -> media %s", job_id, media.id)
+
+            try:
+                swap_menu_current_media(db, media.id)
+            except Exception:
+                logger.exception("swap_menu_current_media failed for media %s", media.id)
             return
 
         if not shutil.which("ffmpeg"):

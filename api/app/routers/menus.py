@@ -2,7 +2,7 @@ import logging
 from datetime import datetime, timezone
 from uuid import UUID
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Response, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Response, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -152,6 +152,11 @@ def preview_menu(
 def render_menu(
     menu_id: UUID,
     background_tasks: BackgroundTasks,
+    as_image: bool = Query(
+        True,
+        description="If true, export a full-page JPEG to R2 (best for TVs, no video encode). "
+        "If false, generate a 10s H.264 MP4 (legacy).",
+    ),
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> RenderAccepted:
@@ -167,7 +172,7 @@ def render_menu(
     if not try_acquire_render_slot():
         raise HTTPException(
             status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Video renderer is busy. Try again in about a minute.",
+            detail="Menu renderer is busy. Try again in about a minute.",
         )
     try:
         job = RenderJob(user_id=user.id, menu_id=m.id, status="pending")
@@ -178,5 +183,5 @@ def render_menu(
         release_render_slot()
         raise
 
-    background_tasks.add_task(run_menu_render_job, job.id)
+    background_tasks.add_task(run_menu_render_job, job.id, as_image)
     return RenderAccepted(job_id=job.id, status="pending")

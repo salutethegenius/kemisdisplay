@@ -233,6 +233,8 @@ export function MenuEditor({ id }: { id: string }) {
   const [mediaId, setMediaId] = useState<string | null>(null);
   const { ready: previewReady, lg: previewLg } = useLgBreakpointReady();
   const [mobilePreviewOpen, setMobilePreviewOpen] = useState(false);
+  /** JPEG to R2 (default): best for TVs. Uncheck for legacy 10s MP4 + Mux pipeline. */
+  const [renderAsImage, setRenderAsImage] = useState(true);
 
   const refreshPreview = useCallback(async () => {
     if (!token) return;
@@ -302,17 +304,21 @@ export function MenuEditor({ id }: { id: string }) {
     }
 
     setPhase("rendering");
-    const res = await apiFetch(`/menus/${id}/render`, { method: "POST", token });
+    const q = renderAsImage ? "as_image=true" : "as_image=false";
+    const res = await apiFetch(`/menus/${id}/render?${q}`, {
+      method: "POST",
+      token,
+    });
     const data = await res.json().catch(() => ({}));
     if (res.status === 503) {
       setJobErr(
-        String(data.detail || "Video generator is busy — try again in a moment."),
+        String(data.detail || "Menu renderer is busy — try again in a moment."),
       );
       setPhase("idle");
       return;
     }
     if (!res.ok) {
-      setJobErr(String(data.detail || "Could not start generating the video"));
+      setJobErr(String(data.detail || "Could not start publishing the menu"));
       setPhase("idle");
       return;
     }
@@ -333,7 +339,7 @@ export function MenuEditor({ id }: { id: string }) {
         clearInterval(t);
       }
       if (j.status === "failed") {
-        setJobErr(j.error_message || "Video generation failed");
+        setJobErr(j.error_message || "Menu export failed");
         setPhase("idle");
         clearInterval(t);
       }
@@ -499,6 +505,24 @@ export function MenuEditor({ id }: { id: string }) {
             + Add section
           </button>
 
+          <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-white/10 bg-brand-warm/40 px-3 py-3 text-sm text-brand-cream">
+            <input
+              type="checkbox"
+              checked={renderAsImage}
+              onChange={(e) => setRenderAsImage(e.target.checked)}
+              className="mt-1 h-4 w-4 shrink-0 rounded border-white/20 bg-brand-deep text-brand-amber"
+            />
+            <span>
+              <span className="font-medium text-brand-cream">
+                Static image for TVs (recommended)
+              </span>
+              <span className="mt-1 block text-brand-muted">
+                Exports a full-page JPEG to your CDN — fast and stable on browsers.
+                Turn off to generate a 10s MP4 instead (heavier; may use Mux).
+              </span>
+            </span>
+          </label>
+
           <div className="flex flex-wrap gap-3">
             <button
               type="button"
@@ -509,14 +533,18 @@ export function MenuEditor({ id }: { id: string }) {
               {phase === "saving"
                 ? "Saving…"
                 : phase === "rendering"
-                  ? "Updating video…"
-                  : "Save & update video"}
+                  ? renderAsImage
+                    ? "Publishing image…"
+                    : "Encoding video…"
+                  : renderAsImage
+                    ? "Save & publish image"
+                    : "Save & encode video"}
             </button>
           </div>
           {phase === "done" && (
             <p className="text-sm text-brand-text" role="status">
-              ✓ Saved and video updated. Any screen showing this menu picks up
-              the new video within ~10 seconds.
+              ✓ Saved and published. Screens using this menu pick up the update
+              within ~10 seconds.
               {mediaId && (
                 <>
                   {" "}
@@ -527,7 +555,9 @@ export function MenuEditor({ id }: { id: string }) {
           )}
           {phase === "rendering" && jobStatus && (
             <p className="text-sm text-brand-text" role="status">
-              Generating video… (usually 30–60s)
+              {renderAsImage
+                ? "Capturing menu image… (usually 10–30s)"
+                : "Encoding video… (usually 30–60s)"}
             </p>
           )}
           {jobErr && <p className="text-sm text-red-400">{jobErr}</p>}

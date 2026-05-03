@@ -129,9 +129,8 @@ export function DisplayPlayer({ slug, token }: { slug: string; token: string }) 
         const incomingSig = playlistSignature(data.items);
         const currentSig = playlistSignature(itemsRef.current);
         if (incomingSig === currentSig) {
-          if (data.playlist_version !== versionRef.current) {
-            setVersion(data.playlist_version);
-          }
+          // Same playlist: update ref only — avoid setState every POLL_MS (was causing ~10s TV flash).
+          versionRef.current = data.playlist_version;
           return;
         }
         setVersion(data.playlist_version);
