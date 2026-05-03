@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -18,6 +20,13 @@ def public_playlist(
     screen = db.scalar(select(Screen).where(Screen.slug == slug))
     if not screen or screen.token != token:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Screen not found")
+    # Mark as "on the air" for the onboarding checklist. The display polls every
+    # ~60s — throttle writes to once per 5 minutes per screen so we don't churn.
+    now = datetime.now(timezone.utc)
+    last = screen.last_polled_at
+    if last is None or (now - last).total_seconds() > 300:
+        screen.last_polled_at = now
+        db.commit()
     items = db.scalars(
         select(PlaylistItem)
         .where(PlaylistItem.screen_id == screen.id)
