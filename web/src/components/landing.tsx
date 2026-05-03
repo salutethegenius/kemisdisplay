@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { BrandLockup } from "@/components/brand-lockup";
+import { MarketingFooter } from "@/components/marketing-footer";
 
 export function Landing() {
   return (
@@ -297,22 +298,7 @@ export function Landing() {
         </section>
       </main>
 
-      <footer className="border-t border-white/10 px-4 py-8 pb-[max(2rem,env(safe-area-inset-bottom))] text-center text-xs text-brand-muted sm:px-6">
-        <nav
-          aria-label="Footer"
-          className="flex flex-wrap justify-center gap-x-4 gap-y-2"
-        >
-          <Link href="/login" className="hover:text-brand-cream">
-            Log in
-          </Link>
-          <span aria-hidden>·</span>
-          <Link href="/signup" className="hover:text-brand-cream">
-            Start free trial
-          </Link>
-          <span aria-hidden>·</span>
-          <span>kemisdisplay.com — Kemis product family</span>
-        </nav>
-      </footer>
+      <MarketingFooter />
     </div>
   );
 }
