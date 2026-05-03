@@ -1,6 +1,6 @@
 import logging
 
-from pydantic import field_validator
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 _config_logger = logging.getLogger("kemisdisplay.config")
@@ -41,6 +41,9 @@ class Settings(BaseSettings):
     r2_public_url: str = ""
     # Videos larger than this (MB) use Mux when Mux is enabled; smaller use R2 when R2 is enabled.
     video_mux_threshold_mb: int = 50
+    # Optional error monitoring (https://sentry.io). Same org/project as web when set.
+    sentry_dsn: str = ""
+    sentry_traces_sample_rate: float = Field(default=0.0, ge=0.0, le=1.0)
 
     @field_validator("jwt_secret", mode="after")
     @classmethod

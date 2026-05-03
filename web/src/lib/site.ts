@@ -24,3 +24,15 @@ export const DEFAULT_TITLE =
 /** Under 155 chars — homepage / default description */
 export const DEFAULT_DESCRIPTION =
   "No extra hardware. Upload menus and promos, hit publish, and every screen updates instantly. 14-day trial, then $25/mo for up to 4 screens.";
+
+/** Human-facing support address; override with NEXT_PUBLIC_SUPPORT_EMAIL. */
+export function getSupportEmail(): string {
+  const raw = process.env.NEXT_PUBLIC_SUPPORT_EMAIL?.trim();
+  return raw || "legal@kemisdisplay.com";
+}
+
+/** Full WhatsApp URL (e.g. https://wa.me/15551234567). Omit from env to hide the button. */
+export function getSupportWhatsAppUrl(): string | null {
+  const raw = process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP_URL?.trim();
+  return raw || null;
+}

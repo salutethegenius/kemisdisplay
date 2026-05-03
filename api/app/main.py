@@ -17,6 +17,23 @@ from app.models import User
 from app.routers import admin, auth, jobs, media, menus, mux_webhook, onboarding, playlist, public_display, screens
 from app.services.r2_storage import check_r2_connection
 
+
+def _init_sentry() -> None:
+    dsn = settings.sentry_dsn.strip()
+    if not dsn:
+        return
+    import sentry_sdk
+    from sentry_sdk.integrations.fastapi import FastApiIntegration
+
+    sentry_sdk.init(
+        dsn=dsn,
+        integrations=[FastApiIntegration()],
+        traces_sample_rate=float(settings.sentry_traces_sample_rate),
+    )
+
+
+_init_sentry()
+
 limiter = Limiter(key_func=get_remote_address)
 
 logger = logging.getLogger("kemisdisplay")
