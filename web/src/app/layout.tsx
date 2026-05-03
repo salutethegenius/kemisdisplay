@@ -94,6 +94,10 @@ export const metadata: Metadata = {
     title: SITE_NAME,
     statusBarStyle: "black-translucent",
   },
+  // Standards-based equivalent of apple-mobile-web-app-capable (Chrome deprecation guidance).
+  other: {
+    "mobile-web-app-capable": "yes",
+  },
   formatDetection: {
     telephone: false,
   },
