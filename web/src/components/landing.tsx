@@ -55,7 +55,7 @@ export function Landing() {
           </Link>
           <Link
             href="/login"
-            className="rounded-full border border-white/15 px-6 py-3 text-sm font-medium text-brand-cream transition hover:border-brand-amber/40 hover:bg-brand-amber/5"
+            className="rounded-full px-6 py-3 text-sm font-medium text-brand-muted transition hover:text-brand-cream"
           >
             Log in
           </Link>
@@ -64,6 +64,47 @@ export function Landing() {
           Built for restaurants, retail stores, bars, salons, and venues that
           need fast, reliable control over what&apos;s on screen.
         </p>
+
+        <section className="mt-20" aria-labelledby="how-heading">
+          <h2
+            id="how-heading"
+            className="font-heading text-xl font-semibold text-brand-cream"
+          >
+            How it works
+          </h2>
+          <ol className="mt-8 grid gap-6 sm:grid-cols-3">
+            {[
+              {
+                n: "1",
+                title: "Create a screen",
+                body: "Name your TV. You'll get a unique URL to open on it.",
+              },
+              {
+                n: "2",
+                title: "Add your menu or media",
+                body: "Build a chalkboard menu, or upload your own image or video.",
+              },
+              {
+                n: "3",
+                title: "Open the URL on your TV",
+                body: "That's it. Updates appear in seconds — no app required.",
+              },
+            ].map((s) => (
+              <li
+                key={s.n}
+                className="rounded-2xl border border-white/10 bg-brand-warm/40 p-6"
+              >
+                <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-brand-amber text-sm font-bold text-brand-deep">
+                  {s.n}
+                </span>
+                <h3 className="mt-4 font-heading font-semibold text-brand-cream">
+                  {s.title}
+                </h3>
+                <p className="mt-2 text-sm text-brand-text">{s.body}</p>
+              </li>
+            ))}
+          </ol>
+        </section>
 
         <section className="mt-20" aria-labelledby="value-heading">
           <h2
@@ -94,7 +135,7 @@ export function Landing() {
             </div>
             <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6">
               <h3 className="font-heading font-semibold text-brand-cream">
-                Built for real businesses
+                Built for restaurants, cafés, bars, and retail
               </h3>
               <p className="mt-2 text-sm text-brand-text">
                 Designed for busy owners and managers who need control, speed,
@@ -109,11 +150,11 @@ export function Landing() {
             id="mid-heading"
             className="font-heading text-2xl font-semibold text-brand-cream sm:text-3xl"
           >
-            Stop paying for boxes you don&apos;t need
+            What you&apos;d otherwise spend on signage hardware. Gone.
           </h2>
           <p className="mt-4 text-lg text-brand-text">
-            Most signage systems lock you into hardware, installers, and ongoing
-            maintenance. KemisDisplay removes all of that.
+            Most signage systems lock you into a media player, an installer, and
+            ongoing maintenance. KemisDisplay removes all of that.
           </p>
           <p className="mt-4 text-lg font-medium text-brand-cream">
             Open a single link on your TV and you&apos;re live.
@@ -159,12 +200,72 @@ export function Landing() {
           </p>
         </section>
 
-        <p className="mt-16 max-w-2xl text-sm text-brand-muted">
-          Part of the{" "}
-          <span className="text-brand-text">Kemis ecosystem</span>, built
-          alongside tools powering payments, legal access, and digital
-          infrastructure.
-        </p>
+        <section className="mt-20" aria-labelledby="faq-heading">
+          <h2
+            id="faq-heading"
+            className="font-heading text-xl font-semibold text-brand-cream"
+          >
+            Common questions
+          </h2>
+          <div className="mt-8 space-y-3">
+            {[
+              {
+                q: "What if my internet goes down?",
+                a: "Each TV caches the last playlist it received, so existing content keeps playing through short outages. New changes apply once the connection is back.",
+              },
+              {
+                q: "Does it work on smart TVs, Roku, or Chromecast?",
+                a: "Anything with a browser works — open the screen URL on your TV's built-in browser, on a Chromecast tab, or on a cheap mini-PC. There's no app to install.",
+              },
+              {
+                q: "How many screens can I run?",
+                a: "Up to 4 screens on the Starter plan ($25/mo). Need more? Get in touch and we'll size a plan that fits.",
+              },
+              {
+                q: "Can I use my own videos and images?",
+                a: "Yes. Upload MP4s or images, set how long each plays, and rotate as many as you want per screen.",
+              },
+              {
+                q: "How do I cancel?",
+                a: "Cancel any time from your account page. You keep access through the end of the period you've already paid for.",
+              },
+            ].map((item) => (
+              <details
+                key={item.q}
+                className="group rounded-2xl border border-white/10 bg-brand-warm/40 p-5 open:border-brand-amber/25"
+              >
+                <summary className="flex cursor-pointer list-none items-start justify-between gap-3 font-medium text-brand-cream">
+                  <span>{item.q}</span>
+                  <span
+                    aria-hidden
+                    className="mt-1 shrink-0 text-brand-amber transition-transform group-open:rotate-45"
+                  >
+                    +
+                  </span>
+                </summary>
+                <p className="mt-3 text-sm leading-relaxed text-brand-text">
+                  {item.a}
+                </p>
+              </details>
+            ))}
+          </div>
+        </section>
+
+        <section
+          className="mt-20 rounded-2xl border border-white/10 bg-brand-warm/30 p-8 text-center"
+          aria-labelledby="customers-heading"
+        >
+          <h2
+            id="customers-heading"
+            className="font-heading text-sm font-semibold uppercase tracking-wide text-brand-muted"
+          >
+            Customers
+          </h2>
+          <p className="mt-3 text-brand-text">
+            Coming soon — early customer stories from the venues we&apos;re
+            running with today.
+          </p>
+        </section>
 
         <section
           className="mt-20 border-t border-white/10 pt-16 text-center"
