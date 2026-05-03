@@ -69,10 +69,12 @@ export function DisplayPlayer({ slug, token }: { slug: string; token: string }) 
         return null;
       }
       if (!res.ok) {
-        setErr("Invalid display or token.");
-        setItems([]);
-        setVersion(null);
-        clearPlaylistCache(slug);
+        if (!soft) {
+          setErr("Invalid display or token.");
+          setItems([]);
+          setVersion(null);
+          clearPlaylistCache(slug);
+        }
         return null;
       }
       let data: { playlist_version: string; items: Item[] };
