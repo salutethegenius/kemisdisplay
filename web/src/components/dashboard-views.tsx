@@ -7,6 +7,7 @@ import { useCallback, useEffect, useState } from "react";
 import { MenuEditor, MenuList, MenuNew } from "@/components/menu-views";
 import { OnboardingChecklist } from "@/components/onboarding-checklist";
 import { StatusPill } from "@/components/status-pill";
+import { SupportCard } from "@/components/support-card";
 import { apiFetch } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 
@@ -1100,6 +1101,17 @@ function AdminUsers() {
   );
 }
 
+function SupportPage() {
+  return (
+    <div className="max-w-lg">
+      <h1 className="font-heading text-2xl font-semibold text-brand-cream">Support</h1>
+      <div className="mt-6">
+        <SupportCard />
+      </div>
+    </div>
+  );
+}
+
 function AccountPage() {
   const { user, refreshUser } = useAuth();
   useEffect(() => {
@@ -1109,6 +1121,9 @@ function AccountPage() {
   return (
     <div className="max-w-lg">
       <h1 className="font-heading text-2xl font-semibold text-brand-cream">Account</h1>
+      <div className="mt-6">
+        <SupportCard />
+      </div>
       <div className="mt-6 space-y-4 rounded-xl border border-white/10 bg-brand-warm/60 p-6 text-sm text-brand-cream">
         <p>
           <span className="text-brand-muted">Email</span>
@@ -1166,6 +1181,9 @@ export function DashboardRouter() {
   }
   if (pathname === "/dashboard/admin") {
     return <AdminUsers />;
+  }
+  if (pathname === "/dashboard/support") {
+    return <SupportPage />;
   }
   if (pathname === "/dashboard/account") {
     return <AccountPage />;

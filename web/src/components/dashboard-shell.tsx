@@ -23,6 +23,9 @@ function navActive(pathname: string, href: string): boolean {
   if (href === "/dashboard/admin") {
     return pathname.startsWith("/dashboard/admin");
   }
+  if (href === "/dashboard/support") {
+    return pathname === "/dashboard/support";
+  }
   if (href === "/dashboard/account") {
     return pathname === "/dashboard/account";
   }
@@ -43,6 +46,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       { href: "/dashboard", label: "Screens" },
       { href: "/dashboard/media", label: "Media" },
       { href: "/dashboard/menus", label: "Menus" },
+      { href: "/dashboard/support", label: "Support" },
     ];
     if (user?.is_admin) {
       items.push({ href: "/dashboard/admin", label: "Admin" });
