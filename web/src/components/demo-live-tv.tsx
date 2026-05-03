@@ -28,7 +28,7 @@ export function DemoLiveTv({ embedUrl }: { embedUrl: string }) {
   const playerSrc = iframeSrcWithCover(embedUrl);
 
   return (
-    <div className="relative mx-auto aspect-[102/68] w-full max-w-[min(calc(100vw-2rem),22rem)] sm:max-w-[min(92vw,30rem)] md:max-w-[min(90vw,42rem)] lg:max-w-[min(88vw,50rem)] xl:max-w-[min(85vw,56rem)] 2xl:max-w-[min(82vw,60rem)]">
+    <div className="relative mx-auto aspect-[102/68] w-full max-w-[min(calc(100vw-1rem),22rem)] sm:max-w-[min(92vw,30rem)] md:max-w-[min(90vw,42rem)] lg:max-w-[min(88vw,50rem)] xl:max-w-[min(85vw,56rem)] 2xl:max-w-[min(82vw,60rem)]">
       {/* eslint-disable-next-line @next/next/no-img-element -- local marketing SVG */}
       <img
         src="/marketing/flatscreen-tv.svg"
@@ -37,7 +37,7 @@ export function DemoLiveTv({ embedUrl }: { embedUrl: string }) {
         aria-hidden
       />
       <div
-        className="absolute z-10 overflow-hidden rounded-[0.2em] bg-black shadow-[inset_0_0_12px_rgba(0,0,0,0.85)]"
+        className="absolute z-10 min-h-[72px] overflow-hidden rounded-[0.2em] bg-black shadow-[inset_0_0_12px_rgba(0,0,0,0.85)] [transform:translateZ(0)]"
         style={{
           left: `${SCREEN.left}%`,
           top: `${SCREEN.top}%`,
@@ -45,12 +45,15 @@ export function DemoLiveTv({ embedUrl }: { embedUrl: string }) {
           height: `${SCREEN.h}%`,
         }}
       >
+        {/*
+          No loading="lazy": iOS Safari often defers lazy iframes — demo stream looked blank intermittently.
+          allow: autoplay + encrypted-media helps nested HLS/video policy on mobile WebKit.
+        */}
         <iframe
           title="KemisDisplay live demo — real screen player"
           src={playerSrc}
-          className="h-full w-full border-0"
-          loading="lazy"
-          allow="fullscreen"
+          className="h-full min-h-[inherit] w-full border-0"
+          allow="fullscreen; autoplay; encrypted-media; picture-in-picture"
           referrerPolicy="no-referrer-when-downgrade"
         />
       </div>
