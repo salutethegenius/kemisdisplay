@@ -490,9 +490,28 @@ function PlaylistEditor({ id }: { id: string }) {
       </Link>
       <h1 className="mt-6 font-heading text-2xl font-semibold text-brand-cream">Playlist</h1>
       <p className="mt-2 text-sm text-brand-muted">
-        Pick what plays on this TV and how long each item shows. Saved changes
-        reach the screen within about 10 seconds.
+        Pick what plays on this TV. Saved changes reach the screen within about 10
+        seconds.
       </p>
+      {rows.length === 0 && (
+        <p className="mt-3 text-sm text-brand-muted">
+          Add at least one video or image from your library.
+        </p>
+      )}
+      {rows.length === 1 && (
+        <p className="mt-3 rounded-lg border border-white/10 bg-brand-warm/50 px-3 py-2 text-sm text-brand-cream/90">
+          <span className="font-medium text-brand-amber">One item</span> — the TV
+          loops it without switching away. Seconds are saved per row; they only
+          matter if you add more items later.
+        </p>
+      )}
+      {rows.length > 1 && (
+        <p className="mt-3 rounded-lg border border-white/10 bg-brand-warm/50 px-3 py-2 text-sm text-brand-cream/90">
+          <span className="font-medium text-brand-amber">Multiple items</span> —
+          each row shows for its seconds, then the display crossfades to the next.
+          For one looping menu with no cuts, use a single row only.
+        </p>
+      )}
 
       <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
         <select
