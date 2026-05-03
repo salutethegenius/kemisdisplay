@@ -68,6 +68,48 @@
 
 ---
 
+## PostgreSQL backups and restore drill
+
+### Railway (production)
+
+- In **Railway → your Postgres plugin → Data / Backups**, confirm **automated backups** are enabled and note the retention window (plan-dependent).
+- For a **manual logical backup** you control end-to-end, install PostgreSQL client tools locally (`pg_dump` / `pg_restore`), copy **`DATABASE_URL`** from the Railway Postgres variables (or use a read replica URL if you add one), and run the script below.
+
+### Local Docker (`docker compose` in this repo)
+
+Default URL matches `api/.env.example`:
+
+`postgresql://kemis:kemis@localhost:5434/kemisdisplay`
+
+From the **repository root**:
+
+```bash
+docker compose up -d
+./scripts/db_backup.sh "postgresql://kemis:kemis@localhost:5434/kemisdisplay"
+```
+
+This writes `backups/kemisdisplay-<timestamp>.dump` (custom format, **gitignored**). Requires `pg_dump` on your PATH.
+
+### Restore drill (practice on a disposable DB)
+
+**Warning:** `--clean` drops objects before recreating them. Only run against a database you are allowed to wipe (e.g. local Docker).
+
+1. Stop anything using that DB (local API) if you want a quiet restore.
+2. Restore:
+
+```bash
+pg_restore \
+  --dbname "postgresql://kemis:kemis@localhost:5434/kemisdisplay" \
+  --clean --if-exists --no-owner \
+  backups/kemisdisplay-YYYYMMDD-HHMMSS.dump
+```
+
+3. Run **`alembic upgrade head`** in `api/` if the dump predates a migration (usually idempotent), then smoke-test `GET /health` and the dashboard.
+
+If restore complains about ownership, `--no-owner` (above) is usually enough for local/dev. For cross-environment restores, match Postgres major versions when possible (this repo uses **Postgres 16** in `docker-compose.yml`).
+
+---
+
 ## Monorepo tips
 
 - **Railway** only builds the `api` folder when Root Directory = `api`.
