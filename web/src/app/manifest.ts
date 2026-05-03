@@ -1,10 +1,8 @@
 import type { MetadataRoute } from "next";
-import { getSiteUrl, SITE_NAME } from "@/lib/site";
+import { SITE_NAME } from "@/lib/site";
 
 export default function manifest(): MetadataRoute.Manifest {
-  const base = getSiteUrl();
   return {
-    id: `${base}/`,
     name: SITE_NAME,
     short_name: SITE_NAME,
     description:
