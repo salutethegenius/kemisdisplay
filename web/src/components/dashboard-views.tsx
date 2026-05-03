@@ -9,6 +9,7 @@ import { OnboardingChecklist } from "@/components/onboarding-checklist";
 import { StatusPill } from "@/components/status-pill";
 import { SupportCard } from "@/components/support-card";
 import { apiFetch, apiUploadWithProgress } from "@/lib/api";
+import { MEDIA_LIBRARY_REFRESH_CHANNEL } from "@/lib/media-sync";
 import { useAuth } from "@/lib/auth-context";
 
 export type ScreenRow = {
@@ -633,6 +634,21 @@ function MediaLibrary() {
 
   useEffect(() => {
     void load();
+  }, [load]);
+
+  useEffect(() => {
+    const onVis = () => {
+      if (document.visibilityState === "visible") void load();
+    };
+    document.addEventListener("visibilitychange", onVis);
+    return () => document.removeEventListener("visibilitychange", onVis);
+  }, [load]);
+
+  useEffect(() => {
+    if (typeof BroadcastChannel === "undefined") return;
+    const ch = new BroadcastChannel(MEDIA_LIBRARY_REFRESH_CHANNEL);
+    ch.onmessage = () => void load();
+    return () => ch.close();
   }, [load]);
 
   useEffect(() => {

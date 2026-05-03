@@ -135,6 +135,24 @@ def update_menu(
     return _menu_out(m)
 
 
+@router.delete("/{menu_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_menu(
+    menu_id: UUID,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> None:
+    if not billing_allows_write(user):
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            "Trial ended or no active plan. Subscribe to continue.",
+        )
+    m = db.get(Menu, menu_id)
+    if not m or m.user_id != user.id:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Menu not found")
+    db.delete(m)
+    db.commit()
+
+
 @router.get("/{menu_id}/preview")
 def preview_menu(
     menu_id: UUID,

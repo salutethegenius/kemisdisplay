@@ -10,6 +10,7 @@ import {
   useState,
 } from "react";
 import { apiFetch } from "@/lib/api";
+import { broadcastMediaLibraryRefresh } from "@/lib/media-sync";
 import { useAuth } from "@/lib/auth-context";
 
 export type MenuRow = {
@@ -107,6 +108,7 @@ export function MenuList() {
   const { token } = useAuth();
   const [rows, setRows] = useState<MenuRow[]>([]);
   const [err, setErr] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     if (!token) return;
@@ -122,6 +124,28 @@ export function MenuList() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  async function removeMenu(menuId: string, menuTitle: string) {
+    if (!token) return;
+    const label = menuTitle.trim() || "Untitled";
+    if (
+      !window.confirm(
+        `Delete “${label}”? Files already in Media or on playlists are not removed automatically.`,
+      )
+    ) {
+      return;
+    }
+    setDeletingId(menuId);
+    setErr(null);
+    const res = await apiFetch(`/menus/${menuId}`, { method: "DELETE", token });
+    setDeletingId(null);
+    if (!res.ok) {
+      const d = await res.json().catch(() => ({}));
+      setErr(String(d.detail || "Could not delete menu"));
+      return;
+    }
+    setRows((r) => r.filter((x) => x.id !== menuId));
+  }
 
   return (
     <div>
@@ -142,16 +166,26 @@ export function MenuList() {
       <ul className="mt-8 space-y-3">
         {rows.map((m) => (
           <li key={m.id}>
-            <Link
-              href={`/dashboard/menus/${m.id}`}
-              className="flex min-h-11 flex-col justify-center rounded-xl border border-white/10 bg-brand-warm/80 p-4 hover:border-brand-amber/25"
-            >
-              <span className="font-medium text-brand-cream">{m.title}</span>
-              <span className="text-xs text-brand-muted">
-                {m.sections?.length ?? 0} section
-                {m.sections?.length === 1 ? "" : "s"}
-              </span>
-            </Link>
+            <div className="flex flex-col gap-2 rounded-xl border border-white/10 bg-brand-warm/80 p-2 sm:flex-row sm:items-stretch">
+              <Link
+                href={`/dashboard/menus/${m.id}`}
+                className="flex min-h-11 flex-1 flex-col justify-center rounded-lg px-3 py-3 hover:bg-brand-warm/90"
+              >
+                <span className="font-medium text-brand-cream">{m.title}</span>
+                <span className="text-xs text-brand-muted">
+                  {m.sections?.length ?? 0} section
+                  {m.sections?.length === 1 ? "" : "s"}
+                </span>
+              </Link>
+              <button
+                type="button"
+                disabled={deletingId === m.id}
+                onClick={() => void removeMenu(m.id, m.title)}
+                className="min-h-11 shrink-0 rounded-lg border border-red-500/25 bg-red-500/10 px-4 text-sm font-medium text-red-400 hover:bg-red-500/20 disabled:opacity-50 sm:self-center"
+              >
+                {deletingId === m.id ? "Deleting…" : "Delete"}
+              </button>
+            </div>
           </li>
         ))}
       </ul>
@@ -216,6 +250,7 @@ export function MenuNew() {
 
 export function MenuEditor({ id }: { id: string }) {
   const { token } = useAuth();
+  const router = useRouter();
   const [menu, setMenu] = useState<MenuRow | null>(null);
   const [title, setTitle] = useState("");
   const [footer, setFooter] = useState("");
@@ -235,6 +270,7 @@ export function MenuEditor({ id }: { id: string }) {
   const [mobilePreviewOpen, setMobilePreviewOpen] = useState(false);
   /** JPEG to R2 (default): best for TVs. Uncheck for legacy 10s MP4 + Mux pipeline. */
   const [renderAsImage, setRenderAsImage] = useState(true);
+  const [deleting, setDeleting] = useState(false);
 
   const refreshPreview = useCallback(async () => {
     if (!token) return;
@@ -290,6 +326,31 @@ export function MenuEditor({ id }: { id: string }) {
     return true;
   }
 
+  async function deleteMenu() {
+    if (!token || deleting) return;
+    const label = title.trim() || "this menu";
+    if (
+      !window.confirm(
+        `Delete “${label}”? Files already in Media or on playlists are not removed automatically.`,
+      )
+    ) {
+      return;
+    }
+    setJobErr(null);
+    setDeleting(true);
+    try {
+      const res = await apiFetch(`/menus/${id}`, { method: "DELETE", token });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        setJobErr(String(d.detail || "Could not delete menu"));
+        return;
+      }
+      router.push("/dashboard/menus");
+    } finally {
+      setDeleting(false);
+    }
+  }
+
   async function saveAndRender() {
     if (!token) return;
     setJobErr(null);
@@ -336,6 +397,7 @@ export function MenuEditor({ id }: { id: string }) {
       if (j.status === "succeeded" && j.media_id) {
         setMediaId(j.media_id);
         setPhase("done");
+        broadcastMediaLibraryRefresh();
         clearInterval(t);
       }
       if (j.status === "failed") {
@@ -561,6 +623,20 @@ export function MenuEditor({ id }: { id: string }) {
             </p>
           )}
           {jobErr && <p className="text-sm text-red-400">{jobErr}</p>}
+
+          <div className="border-t border-white/10 pt-6">
+            <p className="text-xs font-medium uppercase tracking-wide text-brand-muted">
+              Danger zone
+            </p>
+            <button
+              type="button"
+              disabled={deleting}
+              onClick={() => void deleteMenu()}
+              className="mt-3 min-h-11 w-full rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-2 text-sm font-medium text-red-400 hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+            >
+              {deleting ? "Deleting…" : "Delete this menu"}
+            </button>
+          </div>
         </div>
 
         <div className="min-w-0">
