@@ -1,4 +1,5 @@
 import logging
+import tempfile
 import uuid as uuid_lib
 from pathlib import Path
 from uuid import UUID
@@ -13,6 +14,7 @@ from app.deps import get_current_user
 from app.models import Media, User
 from app.schemas import MediaOut
 from app.services.limits import billing_allows_write, max_storage_bytes_for, sum_user_media_bytes
+from app.services.r2_storage import upload_to_r2
 from app.services.video_probe import probe_video_duration_seconds
 from app.services.video_router import delete_stored_video, process_video
 
@@ -32,6 +34,16 @@ def _guess_type(filename: str) -> str | None:
     if ext in ALLOWED_VIDEO:
         return "video"
     return None
+
+
+def _image_content_type(ext: str) -> str:
+    return {
+        ".jpg": "image/jpeg",
+        ".jpeg": "image/jpeg",
+        ".png": "image/png",
+        ".gif": "image/gif",
+        ".webp": "image/webp",
+    }.get(ext.lower(), "application/octet-stream")
 
 
 @router.get("", response_model=list[MediaOut])
@@ -73,13 +85,13 @@ async def upload_media(
 
     ext = Path(file.filename).suffix.lower() or (".jpg" if kind == "image" else ".mp4")
     uid = uuid_lib.uuid4()
-    user_dir = Path(settings.upload_dir) / str(user.id)
-    user_dir.mkdir(parents=True, exist_ok=True)
-    disk_name = f"{uid}{ext}"
-    path = user_dir / disk_name
 
     duration: int | None = None
     if kind == "video":
+        user_dir = Path(settings.upload_dir) / str(user.id)
+        user_dir.mkdir(parents=True, exist_ok=True)
+        disk_name = f"{uid}{ext}"
+        path = user_dir / disk_name
         path.write_bytes(data)
         dur_f = probe_video_duration_seconds(path)
         if dur_f is not None:
@@ -129,17 +141,37 @@ async def upload_media(
         db.refresh(media)
         return MediaOut.model_validate(media)
 
-    # image (always disk)
-    path.write_bytes(data)
-    base = settings.public_api_base_url.rstrip("/")
-    public_url = f"{base}/files/{user.id}/{disk_name}"
+    # image → R2 only (no silent disk fallback — survives Railway redeploys)
+    if not settings.r2_enabled:
+        raise HTTPException(
+            status.HTTP_503_SERVICE_UNAVAILABLE,
+            "Image uploads require Cloudflare R2. Configure R2_ACCOUNT_ID, "
+            "R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, and R2_PUBLIC_URL.",
+        )
+
+    key = f"images/{uid}{ext}"
+    ctype = _image_content_type(ext)
+    tmp_path: str | None = None
+    try:
+        with tempfile.NamedTemporaryFile(suffix=ext, delete=False) as tmp:
+            tmp.write(data)
+            tmp_path = tmp.name
+        file_url = upload_to_r2(tmp_path, key, content_type=ctype)
+    finally:
+        if tmp_path:
+            Path(tmp_path).unlink(missing_ok=True)
+
     media = Media(
+        id=uid,
         user_id=user.id,
         filename=file.filename,
-        file_url=public_url,
+        file_url=file_url,
         type=kind,
         duration_seconds=duration,
         size_bytes=size,
+        storage_provider="r2",
+        r2_key=key,
+        thumbnail_url=file_url,
     )
     db.add(media)
     db.commit()
