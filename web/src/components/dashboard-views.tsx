@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { MenuEditor, MenuList, MenuNew } from "@/components/menu-views";
+import { OnboardingChecklist } from "@/components/onboarding-checklist";
 import { apiFetch } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 
@@ -62,6 +63,7 @@ function ScreenList() {
 
   return (
     <div>
+      <OnboardingChecklist />
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="font-heading text-2xl font-semibold text-brand-cream">Your screens</h1>
         <Link

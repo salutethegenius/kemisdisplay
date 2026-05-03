@@ -37,6 +37,9 @@ class User(Base):
     trial_ends_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     kemispay_customer_id: Mapped[Optional[str]] = mapped_column(String(128), nullable=True)
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
+    onboarding_dismissed_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=_utcnow
     )
@@ -61,6 +64,9 @@ class Screen(Base):
     name: Mapped[str] = mapped_column(String(255))
     slug: Mapped[str] = mapped_column(String(160), unique=True, index=True)
     token: Mapped[str] = mapped_column(String(64), index=True)
+    last_polled_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=_utcnow
     )
