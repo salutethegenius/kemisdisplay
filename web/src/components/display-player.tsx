@@ -32,51 +32,61 @@ export function DisplayPlayer({ slug, token }: { slug: string; token: string }) 
   itemsRef.current = items;
   idxRef.current = idx;
 
-  const fetchPlaylist = useCallback(async () => {
-    const u = new URL(
-      apiUrl(`/public/screens/${encodeURIComponent(slug)}/playlist`),
-    );
-    u.searchParams.set("token", token);
-    let res: Response;
-    try {
-      res = await fetch(u.toString());
-    } catch {
-      setErr("Could not reach the API. Check NEXT_PUBLIC_API_URL and your network.");
-      setItems([]);
-      setVersion(null);
-      clearPlaylistCache(slug);
-      return null;
-    }
-    if (!res.ok) {
-      setErr("Invalid display or token.");
-      setItems([]);
-      setVersion(null);
-      clearPlaylistCache(slug);
-      return null;
-    }
-    let data: { playlist_version: string; items: Item[] };
-    try {
-      data = (await res.json()) as {
-        playlist_version: string;
-        items: Item[];
-      };
-    } catch {
-      setErr("Invalid response from server.");
-      setItems([]);
-      setVersion(null);
-      clearPlaylistCache(slug);
-      return null;
-    }
-    try {
-      localStorage.setItem(
-        LS_KEY(slug),
-        JSON.stringify({ v: data.playlist_version, items: data.items }),
+  const fetchPlaylist = useCallback(
+    async (options?: { soft?: boolean }) => {
+      const soft = options?.soft === true;
+      const u = new URL(
+        apiUrl(`/public/screens/${encodeURIComponent(slug)}/playlist`),
       );
-    } catch {
-      /* ignore quota */
-    }
-    return data;
-  }, [slug, token]);
+      u.searchParams.set("token", token);
+      let res: Response;
+      try {
+        res = await fetch(u.toString());
+      } catch {
+        if (!soft) {
+          setErr(
+            "Could not reach the API. Check NEXT_PUBLIC_API_URL and your network.",
+          );
+          setItems([]);
+          setVersion(null);
+          clearPlaylistCache(slug);
+        }
+        return null;
+      }
+      if (!res.ok) {
+        setErr("Invalid display or token.");
+        setItems([]);
+        setVersion(null);
+        clearPlaylistCache(slug);
+        return null;
+      }
+      let data: { playlist_version: string; items: Item[] };
+      try {
+        data = (await res.json()) as {
+          playlist_version: string;
+          items: Item[];
+        };
+      } catch {
+        if (!soft) {
+          setErr("Invalid response from server.");
+          setItems([]);
+          setVersion(null);
+          clearPlaylistCache(slug);
+        }
+        return null;
+      }
+      try {
+        localStorage.setItem(
+          LS_KEY(slug),
+          JSON.stringify({ v: data.playlist_version, items: data.items }),
+        );
+      } catch {
+        /* ignore quota */
+      }
+      return data;
+    },
+    [slug, token],
+  );
 
   useEffect(() => {
     void (async () => {
@@ -96,7 +106,7 @@ export function DisplayPlayer({ slug, token }: { slug: string; token: string }) 
   useEffect(() => {
     const id = setInterval(() => {
       void (async () => {
-        const data = await fetchPlaylist();
+        const data = await fetchPlaylist({ soft: true });
         if (!data) return;
         if (data.playlist_version !== version) {
           setVersion(data.playlist_version);
