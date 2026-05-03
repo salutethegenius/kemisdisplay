@@ -13,6 +13,26 @@ import { apiFetch } from "@/lib/api";
 import { broadcastMediaLibraryRefresh } from "@/lib/media-sync";
 import { useAuth } from "@/lib/auth-context";
 
+function menuDeleteAbortSignal(): AbortSignal | undefined {
+  try {
+    if (typeof AbortSignal !== "undefined" && "timeout" in AbortSignal) {
+      return AbortSignal.timeout(60_000);
+    }
+  } catch {
+    /* ignore */
+  }
+  return undefined;
+}
+
+function formatFastApiDetail(body: unknown, fallback: string): string {
+  if (typeof body === "object" && body !== null && "detail" in body) {
+    const det = (body as { detail: unknown }).detail;
+    if (typeof det === "string") return det;
+    if (Array.isArray(det)) return det.map(String).join(" ");
+  }
+  return fallback;
+}
+
 export type MenuRow = {
   id: string;
   user_id: string;
@@ -137,14 +157,31 @@ export function MenuList() {
     }
     setDeletingId(menuId);
     setErr(null);
-    const res = await apiFetch(`/menus/${menuId}`, { method: "DELETE", token });
-    setDeletingId(null);
-    if (!res.ok) {
-      const d = await res.json().catch(() => ({}));
-      setErr(String(d.detail || "Could not delete menu"));
-      return;
+    const signal = menuDeleteAbortSignal();
+    try {
+      const res = await apiFetch(`/menus/${menuId}`, {
+        method: "DELETE",
+        token,
+        ...(signal ? { signal } : {}),
+      });
+      if (!res.ok) {
+        const raw = await res.json().catch(() => ({}));
+        setErr(formatFastApiDetail(raw, "Could not delete menu"));
+        return;
+      }
+      setRows((r) => r.filter((x) => x.id !== menuId));
+    } catch (e) {
+      const name = e instanceof DOMException ? e.name : "";
+      const msg =
+        name === "TimeoutError" || name === "AbortError"
+          ? "Delete timed out — check your connection and try again."
+          : e instanceof Error
+            ? e.message
+            : "Could not delete menu (network error).";
+      setErr(msg);
+    } finally {
+      setDeletingId(null);
     }
-    setRows((r) => r.filter((x) => x.id !== menuId));
   }
 
   return (
@@ -338,14 +375,28 @@ export function MenuEditor({ id }: { id: string }) {
     }
     setJobErr(null);
     setDeleting(true);
+    const signal = menuDeleteAbortSignal();
     try {
-      const res = await apiFetch(`/menus/${id}`, { method: "DELETE", token });
+      const res = await apiFetch(`/menus/${id}`, {
+        method: "DELETE",
+        token,
+        ...(signal ? { signal } : {}),
+      });
       if (!res.ok) {
-        const d = await res.json().catch(() => ({}));
-        setJobErr(String(d.detail || "Could not delete menu"));
+        const raw = await res.json().catch(() => ({}));
+        setJobErr(formatFastApiDetail(raw, "Could not delete menu"));
         return;
       }
       router.push("/dashboard/menus");
+    } catch (e) {
+      const name = e instanceof DOMException ? e.name : "";
+      setJobErr(
+        name === "TimeoutError" || name === "AbortError"
+          ? "Delete timed out — check your connection and try again."
+          : e instanceof Error
+            ? e.message
+            : "Could not delete menu (network error).",
+      );
     } finally {
       setDeleting(false);
     }

@@ -111,7 +111,10 @@ class Menu(Base):
 
     user: Mapped["User"] = relationship(back_populates="menus")
     screen: Mapped[Optional["Screen"]] = relationship(back_populates="menus")
-    render_jobs: Mapped[List["RenderJob"]] = relationship(back_populates="menu")
+    render_jobs: Mapped[List["RenderJob"]] = relationship(
+        back_populates="menu",
+        passive_deletes=True,
+    )
     current_media: Mapped[Optional["Media"]] = relationship(foreign_keys=[current_media_id])
 
 

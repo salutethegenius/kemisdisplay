@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from uuid import UUID
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Response, status
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -141,14 +141,13 @@ def delete_menu(
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> None:
-    if not billing_allows_write(user):
-        raise HTTPException(
-            status.HTTP_403_FORBIDDEN,
-            "Trial ended or no active plan. Subscribe to continue.",
-        )
+    # Deleting is cleanup — allowed even when trial/plan blocks new writes (same idea as media delete).
     m = db.get(Menu, menu_id)
     if not m or m.user_id != user.id:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Menu not found")
+    # Delete jobs first: SQLAlchemy otherwise UPDATEs render_jobs.menu_id to NULL
+    # before deleting the menu, but menu_id is NOT NULL (IntegrityError).
+    db.execute(delete(RenderJob).where(RenderJob.menu_id == menu_id))
     db.delete(m)
     db.commit()
 
