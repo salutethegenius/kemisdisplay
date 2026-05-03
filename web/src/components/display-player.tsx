@@ -1,5 +1,6 @@
 "use client";
 
+import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { apiUrl } from "@/lib/api";
 
@@ -30,6 +31,13 @@ function clearPlaylistCache(slug: string) {
 }
 
 export function DisplayPlayer({ slug, token }: { slug: string; token: string }) {
+  const searchParams = useSearchParams();
+  /** `?fit=cover` fills the viewport (crops); default `contain` letterboxes to avoid clipping. */
+  const fitCover = searchParams.get("fit") === "cover";
+  const mediaObjectClass = fitCover
+    ? "h-full w-full object-cover"
+    : "h-full w-full object-contain";
+
   const [items, setItems] = useState<Item[]>([]);
   const [idx, setIdx] = useState(0);
   const [version, setVersion] = useState<string | null>(null);
@@ -270,7 +278,7 @@ export function DisplayPlayer({ slug, token }: { slug: string; token: string }) 
             ref={videoRef}
             key={item.url + idx}
             src={item.url}
-            className="h-full w-full object-contain"
+            className={mediaObjectClass}
             muted
             playsInline
             loop={singleItem}
@@ -290,7 +298,7 @@ export function DisplayPlayer({ slug, token }: { slug: string; token: string }) 
             key={item.url + idx}
             src={item.url}
             alt=""
-            className="h-full w-full object-contain"
+            className={mediaObjectClass}
             onError={onMediaFailed}
           />
         )}

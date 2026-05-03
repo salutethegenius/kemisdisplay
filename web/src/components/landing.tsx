@@ -2,10 +2,6 @@ import Link from "next/link";
 import { BrandLockup } from "@/components/brand-lockup";
 import { MarketingFooter } from "@/components/marketing-footer";
 
-/** Public demo display — token is read-only for viewing the player only. */
-const LIVE_DEMO_DISPLAY_URL =
-  "https://www.kemisdisplay.com/display/home-0db836?token=4kAFq6u18itbuduziEeq76zF3r8Qp7Ye";
-
 export function Landing() {
   return (
     <div className="min-h-screen min-h-[100dvh] bg-gradient-to-b from-brand-deep via-brand-bar to-brand-warm">
@@ -15,14 +11,12 @@ export function Landing() {
           aria-label="Account"
           className="flex shrink-0 items-center gap-2 sm:gap-4"
         >
-          <a
-            href={LIVE_DEMO_DISPLAY_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="whitespace-nowrap text-sm font-medium text-brand-amber transition hover:text-brand-amber-bright"
+          <Link
+            href="/demo"
+            className="demo-cta-glow whitespace-nowrap rounded-full border border-brand-amber/55 bg-brand-amber/10 px-3 py-2 text-xs font-semibold text-brand-amber transition hover:bg-brand-amber/15 sm:px-4 sm:text-sm"
           >
             Live demo
-          </a>
+          </Link>
           <Link
             href="/login"
             className="whitespace-nowrap text-sm text-brand-muted transition hover:text-brand-cream"
@@ -66,14 +60,12 @@ export function Landing() {
           >
             Start free trial
           </Link>
-          <a
-            href={LIVE_DEMO_DISPLAY_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="rounded-full border border-brand-amber/50 bg-brand-amber/10 px-6 py-3 text-sm font-semibold text-brand-amber transition hover:border-brand-amber hover:bg-brand-amber/15"
+          <Link
+            href="/demo"
+            className="demo-cta-glow rounded-full border border-brand-amber/50 bg-brand-amber/10 px-6 py-3 text-sm font-semibold text-brand-amber transition hover:border-brand-amber hover:bg-brand-amber/15"
           >
             See live demo
-          </a>
+          </Link>
           <Link
             href="/login"
             className="rounded-full px-6 py-3 text-sm font-medium text-brand-muted transition hover:text-brand-cream"
@@ -86,7 +78,11 @@ export function Landing() {
           need fast, reliable control over what&apos;s on screen.
         </p>
 
-        <section className="mt-20" aria-labelledby="how-heading">
+        <section
+          id="how-it-works"
+          className="scroll-mt-24 mt-20"
+          aria-labelledby="how-heading"
+        >
           <h2
             id="how-heading"
             className="font-heading text-xl font-semibold text-brand-cream"
@@ -308,14 +304,12 @@ export function Landing() {
             >
               Start free trial
             </Link>
-            <a
-              href={LIVE_DEMO_DISPLAY_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="rounded-full border border-brand-amber/50 bg-brand-amber/10 px-8 py-3 text-sm font-semibold text-brand-amber transition hover:border-brand-amber hover:bg-brand-amber/15"
+            <Link
+              href="/demo"
+              className="demo-cta-glow rounded-full border border-brand-amber/50 bg-brand-amber/10 px-8 py-3 text-sm font-semibold text-brand-amber transition hover:border-brand-amber hover:bg-brand-amber/15"
             >
               See live demo
-            </a>
+            </Link>
             <Link
               href="/login"
               className="rounded-full border border-white/15 px-8 py-3 text-sm font-medium text-brand-cream transition hover:border-brand-amber/40 hover:bg-brand-amber/5"

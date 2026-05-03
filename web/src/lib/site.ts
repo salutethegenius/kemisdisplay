@@ -36,3 +36,21 @@ export function getSupportWhatsAppUrl(): string | null {
   const raw = process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP_URL?.trim();
   return raw || null;
 }
+
+/** Full URL of the public display player embedded on `/demo` (same-origin iframe). */
+export function getLiveDemoDisplayUrl(): string {
+  const raw = process.env.NEXT_PUBLIC_LIVE_DEMO_URL?.trim();
+  if (raw) {
+    let u = raw.replace(/\/$/, "");
+    if (!/^https?:\/\//i.test(u)) {
+      u = `https://${u}`;
+    }
+    try {
+      new URL(u);
+      return u;
+    } catch {
+      /* fall through */
+    }
+  }
+  return "https://www.kemisdisplay.com/display/home-0db836?token=4kAFq6u18itbuduziEeq76zF3r8Qp7Ye";
+}
