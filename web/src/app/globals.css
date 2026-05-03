@@ -73,4 +73,17 @@ body {
   .text-balance {
     text-wrap: balance;
   }
+
+  .upload-indeterminate-bar {
+    animation: upload-indeterminate 1.2s ease-in-out infinite;
+  }
+}
+
+@keyframes upload-indeterminate {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(350%);
+  }
 }

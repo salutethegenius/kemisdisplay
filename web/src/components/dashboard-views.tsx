@@ -8,7 +8,7 @@ import { MenuEditor, MenuList, MenuNew } from "@/components/menu-views";
 import { OnboardingChecklist } from "@/components/onboarding-checklist";
 import { StatusPill } from "@/components/status-pill";
 import { SupportCard } from "@/components/support-card";
-import { apiFetch } from "@/lib/api";
+import { apiFetch, apiUploadWithProgress } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 
 export type ScreenRow = {
@@ -617,6 +617,8 @@ function MediaLibrary() {
   const [items, setItems] = useState<MediaRow[]>([]);
   const [err, setErr] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  /** `null` = idle; `number` = 0–100; `"…"` = indeterminate */
+  const [uploadPct, setUploadPct] = useState<number | "…" | null>(null);
 
   const load = useCallback(async () => {
     if (!token) return;
@@ -644,22 +646,33 @@ function MediaLibrary() {
     const f = e.target.files?.[0];
     if (!f || !token) return;
     setPending(true);
+    setUploadPct(0);
     setErr(null);
     const fd = new FormData();
     fd.append("file", f);
-    const res = await apiFetch("/media/upload", {
-      method: "POST",
-      token,
-      body: fd,
-    });
-    setPending(false);
-    e.target.value = "";
-    if (!res.ok) {
-      const d = await res.json().catch(() => ({}));
-      setErr(String(d.detail || "Upload failed"));
-      return;
+    try {
+      const res = await apiUploadWithProgress("/media/upload", {
+        token,
+        body: fd,
+        onProgress: (pct) => setUploadPct(pct ?? "…"),
+      });
+      e.target.value = "";
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        setErr(String(d.detail || "Upload failed"));
+        return;
+      }
+      void load();
+    } catch (uploadErr) {
+      setErr(
+        uploadErr instanceof Error
+          ? uploadErr.message
+          : "Upload failed (network error).",
+      );
+    } finally {
+      setPending(false);
+      setUploadPct(null);
     }
-    void load();
   }
 
   async function del(mid: string) {
@@ -674,8 +687,8 @@ function MediaLibrary() {
       <p className="mt-2 text-sm text-brand-muted">
         Images and video. Upload from here, then add to a screen playlist.
       </p>
-      <div className="mt-6">
-        <label className="inline-flex min-h-11 cursor-pointer items-center justify-center rounded-lg bg-brand-amber px-4 text-sm font-semibold text-brand-deep hover:bg-brand-amber-bright">
+      <div className="mt-6 space-y-3">
+        <label className="inline-flex min-h-11 cursor-pointer items-center justify-center rounded-lg bg-brand-amber px-4 text-sm font-semibold text-brand-deep hover:bg-brand-amber-bright disabled:cursor-not-allowed disabled:opacity-60">
           {pending ? "Uploading…" : "Upload file"}
           <input
             type="file"
@@ -685,6 +698,26 @@ function MediaLibrary() {
             onChange={(e) => void onFile(e)}
           />
         </label>
+        {uploadPct !== null && (
+          <div className="max-w-md">
+            <div className="mb-1 flex justify-between text-xs text-brand-muted">
+              <span>Uploading</span>
+              <span>
+                {uploadPct === "…" ? "…" : `${uploadPct}%`}
+              </span>
+            </div>
+            <div className="relative h-2.5 w-full overflow-hidden rounded-full bg-brand-warm/80">
+              {uploadPct === "…" ? (
+                <div className="absolute inset-y-0 left-0 w-2/5 rounded-full bg-brand-amber upload-indeterminate-bar" />
+              ) : (
+                <div
+                  className="h-full rounded-full bg-brand-amber transition-[width] duration-150 ease-out"
+                  style={{ width: `${uploadPct}%` }}
+                />
+              )}
+            </div>
+          </div>
+        )}
       </div>
       {err && <p className="mt-4 text-sm text-red-400">{err}</p>}
       {items.length === 0 && !err && !pending && (

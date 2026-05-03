@@ -58,6 +58,48 @@ export async function apiFetch(
   return fetch(apiUrl(path), { ...rest, headers });
 }
 
+export type UploadProgressCallback = (percent: number | null) => void;
+/** `null` percent means total size is unknown (show indeterminate). */
+
+export function apiUploadWithProgress(
+  path: string,
+  opts: {
+    token: string;
+    body: FormData;
+    onProgress?: UploadProgressCallback;
+  },
+): Promise<Response> {
+  const url = apiUrl(path);
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", url);
+    xhr.setRequestHeader("Authorization", `Bearer ${opts.token}`);
+    xhr.upload.onprogress = (ev) => {
+      if (!opts.onProgress) return;
+      if (ev.lengthComputable && ev.total > 0) {
+        opts.onProgress(Math.round((100 * ev.loaded) / ev.total));
+      } else {
+        opts.onProgress(null);
+      }
+    };
+    xhr.onload = () => {
+      const h = new Headers();
+      const ct = xhr.getResponseHeader("Content-Type");
+      if (ct) h.set("Content-Type", ct);
+      resolve(
+        new Response(xhr.responseText, {
+          status: xhr.status,
+          statusText: xhr.statusText,
+          headers: h,
+        }),
+      );
+    };
+    xhr.onerror = () =>
+      reject(new TypeError("Could not reach the API while uploading."));
+    xhr.send(opts.body);
+  });
+}
+
 /** Message when fetch() throws (API down, wrong host, connection refused). */
 export function apiUnreachableMessage(): string {
   return `Could not reach the API at ${getApiBase()}. For local dev: run Postgres (\`docker compose up -d\`), start the API from \`api/\` (\`uvicorn app.main:app --reload --port 8000\`), and ensure web/.env.local NEXT_PUBLIC_API_URL matches.`;
