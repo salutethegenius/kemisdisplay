@@ -491,7 +491,7 @@ function PlaylistEditor({ id }: { id: string }) {
       <h1 className="mt-6 font-heading text-2xl font-semibold text-brand-cream">Playlist</h1>
       <p className="mt-2 text-sm text-brand-muted">
         Pick what plays on this TV and how long each item shows. Saved changes
-        reach the screen within about a minute.
+        reach the screen within about 10 seconds.
       </p>
 
       <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:flex-wrap">

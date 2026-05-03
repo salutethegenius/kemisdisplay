@@ -5,7 +5,9 @@ import { apiUrl } from "@/lib/api";
 
 type Item = { type: string; url: string; duration_seconds: number };
 
-const POLL_MS = 60_000;
+// 10s poll: a "save and look at the TV" workflow needs to feel near-instant.
+// Each poll is one cheap GET; even at scale this is trivial.
+const POLL_MS = 10_000;
 const LS_KEY = (slug: string) => `kemisdisplay_playlist_${slug}`;
 
 function clearPlaylistCache(slug: string) {
