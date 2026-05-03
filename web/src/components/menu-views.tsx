@@ -148,7 +148,8 @@ export function MenuList() {
             >
               <span className="font-medium text-brand-cream">{m.title}</span>
               <span className="text-xs text-brand-muted">
-                {m.sections?.length ?? 0} section(s) · theme {m.theme}
+                {m.sections?.length ?? 0} section
+                {m.sections?.length === 1 ? "" : "s"}
               </span>
             </Link>
           </li>
@@ -304,12 +305,14 @@ export function MenuEditor({ id }: { id: string }) {
     const res = await apiFetch(`/menus/${id}/render`, { method: "POST", token });
     const data = await res.json().catch(() => ({}));
     if (res.status === 503) {
-      setJobErr(String(data.detail || "Renderer busy — try again shortly."));
+      setJobErr(
+        String(data.detail || "Video generator is busy — try again in a moment."),
+      );
       setPhase("idle");
       return;
     }
     if (!res.ok) {
-      setJobErr(String(data.detail || "Could not start render"));
+      setJobErr(String(data.detail || "Could not start generating the video"));
       setPhase("idle");
       return;
     }
@@ -330,7 +333,7 @@ export function MenuEditor({ id }: { id: string }) {
         clearInterval(t);
       }
       if (j.status === "failed") {
-        setJobErr(j.error_message || "Render failed");
+        setJobErr(j.error_message || "Video generation failed");
         setPhase("idle");
         clearInterval(t);
       }
@@ -524,8 +527,7 @@ export function MenuEditor({ id }: { id: string }) {
           )}
           {phase === "rendering" && jobStatus && (
             <p className="text-sm text-brand-text" role="status">
-              Rendering: <strong>{jobStatus}</strong>… (this usually takes
-              30–60s)
+              Generating video… (usually 30–60s)
             </p>
           )}
           {jobErr && <p className="text-sm text-red-400">{jobErr}</p>}

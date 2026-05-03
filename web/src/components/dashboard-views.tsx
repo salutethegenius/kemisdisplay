@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { MenuEditor, MenuList, MenuNew } from "@/components/menu-views";
 import { OnboardingChecklist } from "@/components/onboarding-checklist";
+import { StatusPill } from "@/components/status-pill";
 import { apiFetch } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 
@@ -73,26 +74,28 @@ function ScreenList() {
           New screen
         </Link>
       </div>
-      <div className="mt-4 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
-        <Link
-          href="/dashboard/media"
-          className="inline-flex min-h-11 items-center justify-center rounded-lg border border-white/15 bg-brand-warm/80 px-3 text-sm font-medium text-brand-cream hover:bg-brand-warm"
-        >
-          Media library
-        </Link>
-        <Link
-          href="/dashboard/menus"
-          className="inline-flex min-h-11 items-center justify-center rounded-lg border border-white/15 bg-brand-warm/80 px-3 text-sm font-medium text-brand-cream hover:bg-brand-warm"
-        >
-          Menus
-        </Link>
-        <Link
-          href="/dashboard/menus/new"
-          className="col-span-2 inline-flex min-h-11 items-center justify-center rounded-lg border border-brand-amber/40 bg-brand-amber/10 px-3 text-sm font-medium text-brand-amber hover:bg-brand-amber/20 sm:col-span-1"
-        >
-          New menu video
-        </Link>
-      </div>
+      {screens.length > 0 && (
+        <div className="mt-4 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+          <Link
+            href="/dashboard/media"
+            className="inline-flex min-h-11 items-center justify-center rounded-lg border border-white/15 bg-brand-warm/80 px-3 text-sm font-medium text-brand-cream hover:bg-brand-warm"
+          >
+            Media library
+          </Link>
+          <Link
+            href="/dashboard/menus"
+            className="inline-flex min-h-11 items-center justify-center rounded-lg border border-white/15 bg-brand-warm/80 px-3 text-sm font-medium text-brand-cream hover:bg-brand-warm"
+          >
+            Menus
+          </Link>
+          <Link
+            href="/dashboard/menus/new"
+            className="col-span-2 inline-flex min-h-11 items-center justify-center rounded-lg border border-brand-amber/40 bg-brand-amber/10 px-3 text-sm font-medium text-brand-amber hover:bg-brand-amber/20 sm:col-span-1"
+          >
+            New menu video
+          </Link>
+        </div>
+      )}
       {err && <p className="mt-4 text-sm text-red-400">{err}</p>}
       <ul className="mt-8 space-y-3">
         {screens.map((s) => (
@@ -195,6 +198,42 @@ function NewScreen() {
           {pending ? "Creating…" : "Create screen"}
         </button>
       </form>
+    </div>
+  );
+}
+
+function DisplayQrCode({ value }: { value: string }) {
+  const [dataUrl, setDataUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const mod = await import("qrcode");
+        const url = await mod.toDataURL(value, { width: 280, margin: 1 });
+        if (!cancelled) setDataUrl(url);
+      } catch {
+        // qrcode lib unavailable — show a placeholder rather than blocking.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [value]);
+
+  if (!dataUrl) {
+    return (
+      <div
+        aria-hidden
+        className="h-[140px] w-[140px] shrink-0 animate-pulse rounded-lg bg-white/10"
+      />
+    );
+  }
+
+  return (
+    <div className="shrink-0 rounded-lg bg-white p-2">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={dataUrl} alt="QR code for the display URL" width={140} height={140} />
     </div>
   );
 }
@@ -315,6 +354,22 @@ function ScreenSettings({ id }: { id: string }) {
         >
           {copied ? "Copied" : "Copy URL"}
         </button>
+
+        {fullUrl && (
+          <div className="mt-5 flex flex-col gap-4 sm:flex-row sm:items-start">
+            <DisplayQrCode value={fullUrl} />
+            <div className="text-sm text-brand-muted">
+              <p className="font-medium text-brand-cream">
+                On your TV — three steps:
+              </p>
+              <ol className="mt-2 list-decimal space-y-1 pl-4">
+                <li>Open the TV&apos;s built-in browser.</li>
+                <li>Paste the URL above (or scan the QR with your phone first to test).</li>
+                <li>Bookmark it so the TV reopens it on power-on.</li>
+              </ol>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="mt-6 flex flex-wrap gap-3">
@@ -322,8 +377,9 @@ function ScreenSettings({ id }: { id: string }) {
           type="button"
           onClick={() => void regenerateToken()}
           className="rounded-lg border border-amber-600/50 px-4 py-2 text-sm text-amber-200 hover:bg-amber-950/40"
+          title="Use this if you ever need to revoke an old TV's access."
         >
-          Regenerate display token
+          Refresh security code
         </button>
         <Link
           href={`/dashboard/screens/${id}/playlist`}
@@ -434,8 +490,8 @@ function PlaylistEditor({ id }: { id: string }) {
       </Link>
       <h1 className="mt-6 font-heading text-2xl font-semibold text-brand-cream">Playlist</h1>
       <p className="mt-2 text-sm text-brand-muted">
-        Order and duration (seconds) per slide. Save to push updates to displays
-        (polls about every minute).
+        Pick what plays on this TV and how long each item shows. Saved changes
+        reach the screen within about a minute.
       </p>
 
       <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
@@ -611,6 +667,17 @@ function MediaLibrary() {
         </label>
       </div>
       {err && <p className="mt-4 text-sm text-red-400">{err}</p>}
+      {items.length === 0 && !err && !pending && (
+        <div className="mt-10 rounded-2xl border border-dashed border-white/15 bg-brand-warm/30 p-8 text-center">
+          <p className="text-sm font-medium text-brand-cream">
+            No videos or images yet.
+          </p>
+          <p className="mt-1 text-sm text-brand-muted">
+            Click <strong className="text-brand-amber">Upload file</strong>{" "}
+            above to add one — then drop it into a screen&apos;s playlist.
+          </p>
+        </div>
+      )}
       <div className="mt-8 md:hidden">
         <ul className="space-y-3">
           {items.map((m) => (
@@ -631,17 +698,21 @@ function MediaLibrary() {
                   <p className="text-sm font-medium text-brand-cream">{m.filename}</p>
                   <p className="mt-1 text-xs text-brand-muted">
                     {m.type}
-                    {m.mux_status === "processing" ? (
-                      <span className="text-amber-400"> · Processing…</span>
-                    ) : null}
-                    {m.mux_status === "failed" ? (
-                      <span className="text-red-400"> · Failed</span>
-                    ) : null}
                     {m.duration_seconds != null
                       ? ` · ${m.duration_seconds}s`
                       : ""}{" "}
                     · {(m.size_bytes / 1024 / 1024).toFixed(2)} MB
                   </p>
+                  {m.mux_status === "processing" && (
+                    <div className="mt-2">
+                      <StatusPill tone="amber">Processing</StatusPill>
+                    </div>
+                  )}
+                  {m.mux_status === "failed" && (
+                    <div className="mt-2">
+                      <StatusPill tone="red">Failed</StatusPill>
+                    </div>
+                  )}
                 </div>
               </div>
               <button
@@ -686,13 +757,13 @@ function MediaLibrary() {
                   {m.filename}
                 </td>
                 <td className="px-4 py-3">
-                  {m.type}
-                  {m.mux_status === "processing" ? (
-                    <span className="ml-1 text-amber-400">(processing)</span>
-                  ) : null}
-                  {m.mux_status === "failed" ? (
-                    <span className="ml-1 text-red-400">(failed)</span>
-                  ) : null}
+                  <span className="mr-2">{m.type}</span>
+                  {m.mux_status === "processing" && (
+                    <StatusPill tone="amber">Processing</StatusPill>
+                  )}
+                  {m.mux_status === "failed" && (
+                    <StatusPill tone="red">Failed</StatusPill>
+                  )}
                 </td>
                 <td className="px-4 py-3">
                   {m.duration_seconds != null ? `${m.duration_seconds}s` : "—"}
