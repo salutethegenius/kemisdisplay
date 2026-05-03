@@ -27,6 +27,8 @@ export function DisplayPlayer({ slug, token }: { slug: string; token: string }) 
   const [loading, setLoading] = useState(true);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  /** Avoid restarting the same clip when deps churn but idx/url are unchanged (fixes periodic flash). */
+  const lastVideoSlideIdentityRef = useRef<string>("");
   const itemsRef = useRef<Item[]>([]);
   const idxRef = useRef(0);
   itemsRef.current = items;
@@ -89,6 +91,7 @@ export function DisplayPlayer({ slug, token }: { slug: string; token: string }) 
   );
 
   useEffect(() => {
+    lastVideoSlideIdentityRef.current = "";
     void (async () => {
       setLoading(true);
       setErr(null);
@@ -174,13 +177,20 @@ export function DisplayPlayer({ slug, token }: { slug: string; token: string }) 
     if (!item) return;
 
     if (item.type === "video") {
+      const slideIdentity = `${idx}|${item.url}`;
+      const sameSlide = lastVideoSlideIdentityRef.current === slideIdentity;
       const v = videoRef.current;
       if (v) {
-        v.currentTime = 0;
+        if (!sameSlide) {
+          lastVideoSlideIdentityRef.current = slideIdentity;
+          v.currentTime = 0;
+        }
         void v.play().catch(() => {});
       }
       // Single video item: let the <video loop> attribute handle continuous playback.
-      if (singleItem) return;
+      if (singleItem) {
+        return;
+      }
       const capMs = Math.min(item.duration_seconds, 300) * 1000;
       timerRef.current = setTimeout(() => advance(), capMs);
       return () => {
@@ -198,7 +208,7 @@ export function DisplayPlayer({ slug, token }: { slug: string; token: string }) 
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [item, advance, singleItem]);
+  }, [item, advance, singleItem, items.length, idx]);
 
   if (loading) {
     return (

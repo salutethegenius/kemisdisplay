@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { BrandLockup } from "@/components/brand-lockup";
-import { apiFetch } from "@/lib/api";
+import { apiFetch, apiUnreachableMessage } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 
 export default function LoginPage() {
@@ -45,6 +45,12 @@ export default function LoginPage() {
       }
       login(data.access_token, data.user);
       router.push("/dashboard");
+    } catch (e) {
+      if (e instanceof TypeError) {
+        setErr(apiUnreachableMessage());
+        return;
+      }
+      throw e;
     } finally {
       setPending(false);
     }

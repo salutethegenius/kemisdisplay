@@ -53,14 +53,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setState({ token: null, user: null, loading: false });
       return;
     }
-    const res = await apiFetch("/auth/me", { token });
-    if (!res.ok) {
+    try {
+      const res = await apiFetch("/auth/me", { token });
+      if (!res.ok) {
+        localStorage.removeItem(STORAGE_KEY);
+        setState({ token: null, user: null, loading: false });
+        return;
+      }
+      const user = (await res.json()) as User;
+      setState({ token, user, loading: false });
+    } catch {
       localStorage.removeItem(STORAGE_KEY);
       setState({ token: null, user: null, loading: false });
-      return;
     }
-    const user = (await res.json()) as User;
-    setState({ token, user, loading: false });
   }, []);
 
   useEffect(() => {
@@ -71,14 +76,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     setState((s) => ({ ...s, token: t }));
     void (async () => {
-      const res = await apiFetch("/auth/me", { token: t });
-      if (!res.ok) {
+      try {
+        const res = await apiFetch("/auth/me", { token: t });
+        if (!res.ok) {
+          localStorage.removeItem(STORAGE_KEY);
+          setState({ token: null, user: null, loading: false });
+          return;
+        }
+        const user = (await res.json()) as User;
+        setState({ token: t, user, loading: false });
+      } catch {
         localStorage.removeItem(STORAGE_KEY);
         setState({ token: null, user: null, loading: false });
-        return;
       }
-      const user = (await res.json()) as User;
-      setState({ token: t, user, loading: false });
     })();
   }, []);
 
