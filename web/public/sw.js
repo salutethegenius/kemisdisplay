@@ -22,6 +22,12 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
+  // Let the browser handle HTML navigations — avoids wrapping failures as Response.error()
+  // (Chrome: "FetchEvent ... resolved with an error response") on flaky network / display URL.
+  if (event.request.mode === "navigate") {
+    return;
+  }
+
   event.respondWith(
     fetch(event.request).catch(() => {
       return Response.error();

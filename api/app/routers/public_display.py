@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -25,7 +25,13 @@ def public_playlist(
     now = datetime.now(timezone.utc)
     last = screen.last_polled_at
     if last is None or (now - last).total_seconds() > 300:
-        screen.last_polled_at = now
+        # Core UPDATE only — avoids ORM onupdate bumping Screen.updated_at, which would
+        # change playlist_version on every poll stamp and reset customer displays.
+        db.execute(
+            update(Screen)
+            .where(Screen.id == screen.id)
+            .values(last_polled_at=now)
+        )
         db.commit()
     items = db.scalars(
         select(PlaylistItem)

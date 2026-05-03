@@ -4,13 +4,24 @@ import { useParams, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { DisplayPlayer } from "@/components/display-player";
 
+function readStoredTokenForSlug(slug: string): string | null {
+  if (typeof window === "undefined" || !slug) return null;
+  try {
+    return localStorage.getItem(`kemisdisplay_token_${slug}`);
+  } catch {
+    return null;
+  }
+}
+
 export function DisplayClient() {
   const params = useParams();
   const searchParams = useSearchParams();
   const raw = params.slug;
   const first = Array.isArray(raw) ? raw[0] : raw;
   const slug = decodeURIComponent(first || "");
-  const [storedToken, setStoredToken] = useState<string | null>(null);
+  const [storedToken, setStoredToken] = useState<string | null>(() =>
+    readStoredTokenForSlug(slug),
+  );
 
   useEffect(() => {
     if (!slug) return;

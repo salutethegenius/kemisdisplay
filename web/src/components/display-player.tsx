@@ -10,6 +10,17 @@ type Item = { type: string; url: string; duration_seconds: number };
 const POLL_MS = 10_000;
 const LS_KEY = (slug: string) => `kemisdisplay_playlist_${slug}`;
 
+/** Stable signature so poll compares playlist content, not only version string. */
+function playlistSignature(items: Item[]): string {
+  return JSON.stringify(
+    items.map((x) => ({
+      t: x.type,
+      u: x.url,
+      d: x.duration_seconds,
+    })),
+  );
+}
+
 function clearPlaylistCache(slug: string) {
   try {
     localStorage.removeItem(LS_KEY(slug));
@@ -31,8 +42,10 @@ export function DisplayPlayer({ slug, token }: { slug: string; token: string }) 
   const lastVideoSlideIdentityRef = useRef<string>("");
   const itemsRef = useRef<Item[]>([]);
   const idxRef = useRef(0);
+  const versionRef = useRef<string | null>(null);
   itemsRef.current = items;
   idxRef.current = idx;
+  versionRef.current = version;
 
   const fetchPlaylist = useCallback(
     async (options?: { soft?: boolean }) => {
@@ -111,15 +124,21 @@ export function DisplayPlayer({ slug, token }: { slug: string; token: string }) 
       void (async () => {
         const data = await fetchPlaylist({ soft: true });
         if (!data) return;
-        if (data.playlist_version !== version) {
-          setVersion(data.playlist_version);
-          setItems(data.items);
-          setIdx(0);
+        const incomingSig = playlistSignature(data.items);
+        const currentSig = playlistSignature(itemsRef.current);
+        if (incomingSig === currentSig) {
+          if (data.playlist_version !== versionRef.current) {
+            setVersion(data.playlist_version);
+          }
+          return;
         }
+        setVersion(data.playlist_version);
+        setItems(data.items);
+        setIdx(0);
       })();
     }, POLL_MS);
     return () => clearInterval(id);
-  }, [fetchPlaylist, version]);
+  }, [fetchPlaylist]);
 
   useEffect(() => {
     let wl: WakeLockSentinel | null = null;
