@@ -97,36 +97,45 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
 
-      <main className="min-h-0 flex-1 overflow-auto bg-brand-deep px-4 pb-28 pt-[max(0.75rem,env(safe-area-inset-top))] md:px-8 md:pb-8 md:pt-8">
+      <main className="min-h-0 w-full max-w-full flex-1 overflow-x-hidden overflow-y-auto bg-brand-deep px-4 pb-28 pt-[max(0.75rem,env(safe-area-inset-top))] md:px-8 md:pb-8 md:pt-8">
         {children}
       </main>
 
       <nav
-        className="fixed bottom-0 left-0 right-0 z-50 border-t border-brand-amber/15 bg-brand-deep/95 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-1 backdrop-blur md:hidden"
+        className="fixed bottom-0 left-0 right-0 z-50 border-t border-brand-amber/20 bg-brand-deep/95 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur md:hidden"
         aria-label="Primary"
       >
         <div className="scrollbar-none flex max-w-full snap-x snap-mandatory overflow-x-auto">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              aria-current={navActive(pathname, item.href) ? "page" : undefined}
-              className={`flex min-h-[52px] min-w-[4.25rem] shrink-0 snap-start flex-col items-center justify-center gap-0.5 px-2 py-2 text-center text-[11px] font-medium leading-tight ${
-                navActive(pathname, item.href)
-                  ? "text-brand-amber"
-                  : "text-brand-muted active:text-brand-cream"
-              }`}
-            >
-              <span>{item.label}</span>
-            </Link>
-          ))}
+          {navItems.map((item) => {
+            const active = navActive(pathname, item.href);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                aria-current={active ? "page" : undefined}
+                className={`flex min-h-[60px] flex-1 min-w-[4.5rem] shrink-0 snap-start flex-col items-center justify-center gap-1 px-2 py-2 text-center text-[13px] font-semibold leading-tight ${
+                  active
+                    ? "text-brand-amber"
+                    : "text-brand-cream/70 active:text-brand-cream"
+                }`}
+              >
+                <span>{item.label}</span>
+                {active && (
+                  <span
+                    aria-hidden
+                    className="h-0.5 w-6 rounded-full bg-brand-amber"
+                  />
+                )}
+              </Link>
+            );
+          })}
           <button
             type="button"
             onClick={() => {
               logout();
               router.push("/");
             }}
-            className="flex min-h-[52px] min-w-[3.5rem] shrink-0 snap-start flex-col items-center justify-center px-2 text-[11px] font-medium text-brand-muted active:text-brand-cream"
+            className="flex min-h-[60px] min-w-[3.5rem] shrink-0 snap-start flex-col items-center justify-center px-2 text-[13px] font-semibold text-brand-cream/70 active:text-brand-cream"
           >
             Out
           </button>

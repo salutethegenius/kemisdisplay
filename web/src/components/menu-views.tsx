@@ -516,7 +516,7 @@ export function MenuEditor({ id }: { id: string }) {
           {phase === "done" && (
             <p className="text-sm text-brand-text" role="status">
               ✓ Saved and video updated. Any screen showing this menu picks up
-              the new video on its next check (~60s).
+              the new video within ~10 seconds.
               {mediaId && (
                 <>
                   {" "}
