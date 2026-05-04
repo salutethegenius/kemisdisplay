@@ -13,6 +13,15 @@ import { apiFetch } from "@/lib/api";
 import { broadcastMediaLibraryRefresh } from "@/lib/media-sync";
 import { useAuth } from "@/lib/auth-context";
 
+/** Must match API `MENU_MAX_ITEMS` in `api/app/schemas.py`. */
+const MENU_MAX_ITEMS = 24;
+
+function countMenuItems(
+  secs: { items: { name: string; price: string }[] }[],
+): number {
+  return secs.reduce((n, sec) => n + sec.items.length, 0);
+}
+
 function menuDeleteAbortSignal(): AbortSignal | undefined {
   try {
     if (typeof AbortSignal !== "undefined" && "timeout" in AbortSignal) {
@@ -28,7 +37,18 @@ function formatFastApiDetail(body: unknown, fallback: string): string {
   if (typeof body === "object" && body !== null && "detail" in body) {
     const det = (body as { detail: unknown }).detail;
     if (typeof det === "string") return det;
-    if (Array.isArray(det)) return det.map(String).join(" ");
+    if (Array.isArray(det)) {
+      return det
+        .map((e) =>
+          typeof e === "object" &&
+          e !== null &&
+          "msg" in e &&
+          typeof (e as { msg: unknown }).msg === "string"
+            ? (e as { msg: string }).msg
+            : String(e),
+        )
+        .join(" ");
+    }
   }
   return fallback;
 }
@@ -355,7 +375,7 @@ export function MenuEditor({ id }: { id: string }) {
     });
     if (!res.ok) {
       const d = await res.json().catch(() => ({}));
-      setJobErr(String(d.detail || "Save failed"));
+      setJobErr(formatFastApiDetail(d, "Save failed"));
       return false;
     }
     setMenu(await res.json());
@@ -484,6 +504,7 @@ export function MenuEditor({ id }: { id: string }) {
   }
 
   function addItem(si: number) {
+    if (countMenuItems(sections) >= MENU_MAX_ITEMS) return;
     setSections((s) =>
       s.map((sec, j) =>
         j === si
@@ -504,6 +525,7 @@ export function MenuEditor({ id }: { id: string }) {
   }
 
   function addSection() {
+    if (countMenuItems(sections) + 1 > MENU_MAX_ITEMS) return;
     setSections((s) => [
       ...s,
       { heading: "Section", items: [{ name: "", price: "" }] },
@@ -528,6 +550,9 @@ export function MenuEditor({ id }: { id: string }) {
     return <p className="text-red-400">{err}</p>;
   }
 
+  const itemTotal = countMenuItems(sections);
+  const atItemCap = itemTotal >= MENU_MAX_ITEMS;
+
   return (
     <div className="mx-auto max-w-6xl">
       <Link
@@ -537,6 +562,14 @@ export function MenuEditor({ id }: { id: string }) {
         ← Menus
       </Link>
       <h1 className="mt-6 text-2xl font-semibold text-brand-cream">Edit menu</h1>
+      <p className="mt-2 text-sm text-brand-muted">
+        {itemTotal}/{MENU_MAX_ITEMS} items (max across all sections).{" "}
+        {atItemCap ? (
+          <span className="text-brand-amber">
+            Remove an item or section to add more.
+          </span>
+        ) : null}
+      </p>
 
       <div className="mt-8 grid gap-8 lg:grid-cols-2">
         <div className="space-y-6">
@@ -603,7 +636,8 @@ export function MenuEditor({ id }: { id: string }) {
               <button
                 type="button"
                 onClick={() => addItem(si)}
-                className="mt-2 text-sm text-brand-amber hover:underline"
+                disabled={atItemCap}
+                className="mt-2 text-sm text-brand-amber hover:underline disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:no-underline"
               >
                 + Add item
               </button>
@@ -613,7 +647,8 @@ export function MenuEditor({ id }: { id: string }) {
           <button
             type="button"
             onClick={addSection}
-            className="text-sm text-brand-text hover:text-brand-cream"
+            disabled={atItemCap}
+            className="text-sm text-brand-text hover:text-brand-cream disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:text-brand-text"
           >
             + Add section
           </button>

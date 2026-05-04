@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, EmailStr, Field, field_validator
+from pydantic import BaseModel, EmailStr, Field, field_validator, model_validator
 
 
 class UserOut(BaseModel):
@@ -134,6 +134,8 @@ class AdminUserUpdate(BaseModel):
 
 # --- Menus ---
 
+MENU_MAX_ITEMS = 24
+
 
 class MenuItemIn(BaseModel):
     name: str = Field(default="", max_length=200)
@@ -159,6 +161,13 @@ class MenuCreate(BaseModel):
             raise ValueError("Only theme 'chalkboard' is supported in MVP")
         return v
 
+    @model_validator(mode="after")
+    def menu_item_count_cap(self) -> "MenuCreate":
+        total = sum(len(sec.items) for sec in self.sections)
+        if total > MENU_MAX_ITEMS:
+            raise ValueError(f"Menu supports at most {MENU_MAX_ITEMS} items.")
+        return self
+
 
 class MenuUpdate(BaseModel):
     title: str | None = Field(default=None, max_length=255)
@@ -175,6 +184,15 @@ class MenuUpdate(BaseModel):
         if v != "chalkboard":
             raise ValueError("Only theme 'chalkboard' is supported in MVP")
         return v
+
+    @model_validator(mode="after")
+    def menu_item_count_cap(self) -> "MenuUpdate":
+        if self.sections is None:
+            return self
+        total = sum(len(sec.items) for sec in self.sections)
+        if total > MENU_MAX_ITEMS:
+            raise ValueError(f"Menu supports at most {MENU_MAX_ITEMS} items.")
+        return self
 
 
 class MenuOut(BaseModel):
