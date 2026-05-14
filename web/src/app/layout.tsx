@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import Script from "next/script";
 import {
   Instrument_Sans,
   Lexend_Deca,
@@ -113,6 +114,34 @@ export default function RootLayout({
       <body
         className={`${instrumentSans.variable} ${unbounded.variable} ${lexendDeca.variable} ${spaceMono.variable} min-h-screen min-h-[100dvh] bg-brand-deep font-sans text-brand-cream antialiased`}
       >
+        <Script
+          id="meta-pixel"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '1502105367986194');
+fbq('track', 'PageView');
+            `.trim(),
+          }}
+        />
+        <noscript>
+          {/* eslint-disable-next-line @next/next/no-img-element -- Meta Pixel noscript fallback */}
+          <img
+            height={1}
+            width={1}
+            style={{ display: "none" }}
+            src="https://www.facebook.com/tr?id=1502105367986194&ev=PageView&noscript=1"
+            alt=""
+          />
+        </noscript>
         <ServiceWorkerRegister />
         <AuthProvider>{children}</AuthProvider>
       </body>
