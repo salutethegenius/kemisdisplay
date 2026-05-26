@@ -8,6 +8,7 @@ class UserOut(BaseModel):
     id: UUID
     email: str
     business_name: str
+    account_slug: str
     plan: str
     trial_ends_at: datetime
     effective_tier: str | None = None
@@ -33,6 +34,10 @@ class LoginBody(BaseModel):
     password: str
 
 
+class ProfileUpdateBody(BaseModel):
+    account_slug: str = Field(min_length=2, max_length=80)
+
+
 class ScreenCreate(BaseModel):
     name: str = Field(min_length=1, max_length=255)
 
@@ -47,11 +52,17 @@ class ScreenOut(BaseModel):
     name: str
     slug: str
     token: str
+    display_number: int
     display_url_hint: str
     created_at: datetime
     updated_at: datetime
 
     model_config = {"from_attributes": True}
+
+
+class DisplayBootstrapOut(BaseModel):
+    slug: str
+    token: str
 
 
 class MediaOut(BaseModel):

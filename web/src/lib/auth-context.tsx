@@ -14,6 +14,7 @@ export type User = {
   id: string;
   email: string;
   business_name: string;
+  account_slug: string;
   plan: string;
   trial_ends_at: string;
   effective_tier: string | null;

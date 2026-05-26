@@ -5,10 +5,35 @@ from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models import Media, PlaylistItem, Screen
-from app.schemas import PublicPlaylistItem, PublicPlaylistResponse
+from app.models import Media, PlaylistItem, Screen, User
+from app.schemas import DisplayBootstrapOut, PublicPlaylistItem, PublicPlaylistResponse
 
 router = APIRouter()
+
+
+@router.get(
+    "/accounts/{account_slug}/screens/{display_number}/bootstrap",
+    response_model=DisplayBootstrapOut,
+)
+def bootstrap_display(
+    account_slug: str,
+    display_number: int,
+    db: Session = Depends(get_db),
+) -> DisplayBootstrapOut:
+    if display_number < 1:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Screen not found")
+    user = db.scalar(select(User).where(User.account_slug == account_slug))
+    if not user:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Screen not found")
+    screen = db.scalar(
+        select(Screen).where(
+            Screen.user_id == user.id,
+            Screen.display_number == display_number,
+        )
+    )
+    if not screen:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Screen not found")
+    return DisplayBootstrapOut(slug=screen.slug, token=screen.token)
 
 
 @router.get("/screens/{slug}/playlist", response_model=PublicPlaylistResponse)

@@ -15,18 +15,19 @@ from app.services.limits import (
     count_user_screens,
     max_screens_for,
 )
-from app.services.slug import unique_slug
+from app.services.slug import next_display_number, unique_slug
 
 router = APIRouter()
 
 
-def _screen_out(s: Screen) -> ScreenOut:
+def _screen_out(s: Screen, user: User) -> ScreenOut:
     return ScreenOut(
         id=s.id,
         name=s.name,
         slug=s.slug,
         token=s.token,
-        display_url_hint=f"/display/{s.slug}?token={s.token}",
+        display_number=s.display_number,
+        display_url_hint=f"/{user.account_slug}/{s.display_number}",
         created_at=s.created_at,
         updated_at=s.updated_at,
     )
@@ -38,7 +39,7 @@ def list_screens(
     db: Session = Depends(get_db),
 ) -> list[ScreenOut]:
     rows = db.scalars(select(Screen).where(Screen.user_id == user.id).order_by(Screen.created_at)).all()
-    return [_screen_out(s) for s in rows]
+    return [_screen_out(s, user) for s in rows]
 
 
 @router.post("", response_model=ScreenOut)
@@ -62,11 +63,18 @@ def create_screen(
         )
     slug = unique_slug(db, body.name)
     token = secrets.token_urlsafe(24)
-    screen = Screen(user_id=user.id, name=body.name.strip(), slug=slug, token=token)
+    display_number = next_display_number(db, user.id)
+    screen = Screen(
+        user_id=user.id,
+        name=body.name.strip(),
+        slug=slug,
+        token=token,
+        display_number=display_number,
+    )
     db.add(screen)
     db.commit()
     db.refresh(screen)
-    return _screen_out(screen)
+    return _screen_out(screen, user)
 
 
 @router.get("/{screen_id}", response_model=ScreenOut)
@@ -78,7 +86,7 @@ def get_screen(
     screen = db.get(Screen, screen_id)
     if not screen or screen.user_id != user.id:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Screen not found")
-    return _screen_out(screen)
+    return _screen_out(screen, user)
 
 
 @router.patch("/{screen_id}", response_model=ScreenOut)
@@ -98,7 +106,7 @@ def update_screen(
     screen.updated_at = datetime.now(timezone.utc)
     db.commit()
     db.refresh(screen)
-    return _screen_out(screen)
+    return _screen_out(screen, user)
 
 
 @router.delete("/{screen_id}", status_code=status.HTTP_204_NO_CONTENT)

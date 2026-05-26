@@ -31,6 +31,7 @@ class User(Base):
     email: Mapped[str] = mapped_column(String(320), unique=True, index=True)
     hashed_password: Mapped[str] = mapped_column(String(255))
     business_name: Mapped[str] = mapped_column(String(255), default="")
+    account_slug: Mapped[str] = mapped_column(String(80), unique=True, index=True)
     plan: Mapped[str] = mapped_column(
         String(32), default="trialing"
     )  # trialing | starter | pro | business
@@ -62,6 +63,7 @@ class Screen(Base):
         UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), index=True
     )
     name: Mapped[str] = mapped_column(String(255))
+    display_number: Mapped[int] = mapped_column(Integer)
     slug: Mapped[str] = mapped_column(String(160), unique=True, index=True)
     token: Mapped[str] = mapped_column(String(64), index=True)
     last_polled_at: Mapped[Optional[datetime]] = mapped_column(
@@ -79,6 +81,8 @@ class Screen(Base):
         back_populates="screen", cascade="all, delete-orphan"
     )
     menus: Mapped[List["Menu"]] = relationship(back_populates="screen")
+
+    __table_args__ = (UniqueConstraint("user_id", "display_number", name="uq_screens_user_display_number"),)
 
 
 class Menu(Base):

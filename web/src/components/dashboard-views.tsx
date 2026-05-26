@@ -17,6 +17,7 @@ export type ScreenRow = {
   name: string;
   slug: string;
   token: string;
+  display_number: number;
   display_url_hint: string;
   created_at: string;
   updated_at: string;
@@ -339,7 +340,7 @@ function ScreenSettings({ id }: { id: string }) {
 
       <div className="mt-10 rounded-xl border border-white/10 bg-brand-warm/60 p-4">
         <p className="text-xs font-medium uppercase tracking-wide text-brand-muted">
-          Display URL
+          TV URL
         </p>
         <p className="mt-2 break-all font-mono text-sm text-brand-amber/90">
           {fullUrl}
@@ -366,9 +367,17 @@ function ScreenSettings({ id }: { id: string }) {
               </p>
               <ol className="mt-2 list-decimal space-y-1 pl-4">
                 <li>Open the TV&apos;s built-in browser.</li>
-                <li>Paste the URL above (or scan the QR with your phone first to test).</li>
+                <li>
+                  Type the URL above (screen {screen?.display_number}) — or scan the QR
+                  with your phone first to test.
+                </li>
                 <li>Bookmark it so the TV reopens it on power-on.</li>
               </ol>
+              <p className="mt-3 text-xs">
+                Anyone with this link can view your playlist. Use &ldquo;Refresh
+                security code&rdquo; below to revoke old long URLs that included a
+                token.
+              </p>
             </div>
           </div>
         )}
@@ -1172,10 +1181,47 @@ function SupportPage() {
 }
 
 function AccountPage() {
-  const { user, refreshUser } = useAuth();
+  const { user, token, refreshUser } = useAuth();
+  const [accountSlug, setAccountSlug] = useState("");
+  const [slugErr, setSlugErr] = useState<string | null>(null);
+  const [slugSaved, setSlugSaved] = useState(false);
+  const [savingSlug, setSavingSlug] = useState(false);
+
   useEffect(() => {
     void refreshUser();
   }, [refreshUser]);
+
+  useEffect(() => {
+    if (user?.account_slug) setAccountSlug(user.account_slug);
+  }, [user?.account_slug]);
+
+  const shortUrlPrefix =
+    typeof window !== "undefined" && user?.account_slug
+      ? `${window.location.host}/${user.account_slug}/`
+      : user?.account_slug
+        ? `kemisdisplay.com/${user.account_slug}/`
+        : "";
+
+  async function saveAccountSlug(e: React.FormEvent) {
+    e.preventDefault();
+    if (!token || !accountSlug.trim()) return;
+    setSlugErr(null);
+    setSavingSlug(true);
+    const res = await apiFetch("/auth/me", {
+      method: "PATCH",
+      token,
+      body: JSON.stringify({ account_slug: accountSlug.trim() }),
+    });
+    setSavingSlug(false);
+    if (!res.ok) {
+      const d = await res.json().catch(() => ({}));
+      setSlugErr(String(d.detail || "Could not update URL"));
+      return;
+    }
+    await refreshUser();
+    setSlugSaved(true);
+    setTimeout(() => setSlugSaved(false), 2000);
+  }
 
   return (
     <div className="max-w-lg">
@@ -1201,6 +1247,42 @@ function AccountPage() {
             ? new Date(user.trial_ends_at).toLocaleString()
             : "—"}
         </p>
+        <form onSubmit={(e) => void saveAccountSlug(e)} className="pt-2">
+          <label className="text-brand-muted">TV link prefix</label>
+          <p className="mt-1 text-xs text-brand-muted">
+            Screens use{" "}
+            <span className="font-mono text-brand-text">
+              {shortUrlPrefix || "your-name/"}
+              1
+            </span>
+            ,{" "}
+            <span className="font-mono text-brand-text">
+              {shortUrlPrefix || "your-name/"}
+              2
+            </span>
+            , etc.
+          </p>
+          <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
+            <div className="flex min-w-0 flex-1 items-center rounded-lg border border-white/10 bg-brand-warm">
+              <span className="shrink-0 pl-3 text-xs text-brand-muted">/</span>
+              <input
+                value={accountSlug}
+                onChange={(e) => setAccountSlug(e.target.value)}
+                className="min-w-0 flex-1 bg-transparent py-2 pr-3 text-sm text-brand-cream outline-none"
+                placeholder="your-business"
+              />
+              <span className="shrink-0 pr-3 text-xs text-brand-muted">/1</span>
+            </div>
+            <button
+              type="submit"
+              disabled={savingSlug}
+              className="rounded-lg border border-white/15 px-4 py-2 text-sm text-brand-cream hover:bg-brand-warm disabled:opacity-50"
+            >
+              {savingSlug ? "Saving…" : slugSaved ? "Saved" : "Save"}
+            </button>
+          </div>
+          {slugErr && <p className="mt-2 text-sm text-red-400">{slugErr}</p>}
+        </form>
         <p className="text-brand-muted">
           Billing via KemisPay will appear here in Phase 3. For now, use{" "}
           <code className="text-brand-text">DEV_BYPASS_BILLING</code> in local API
