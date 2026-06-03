@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0d0806" />
+    <meta name="color-scheme" content="dark" />
+    <title>Freeport Live Demo · KemisDisplay</title>
+    <meta
+      name="description"
+      content="Exclusive Freeport in-person demo — see KemisDisplay live and lock your spot. Date and location coming soon."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://kemisdisplay.com/freeport/" />
+    <meta property="og:site_name" content="KemisDisplay" />
+    <meta property="og:title" content="Freeport Live Demo · KemisDisplay" />
+    <meta
+      property="og:description"
+      content="Exclusive Freeport in-person demo — see KemisDisplay live and lock your spot."
+    />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Freeport Live Demo · KemisDisplay" />
+    <meta
+      name="twitter:description"
+      content="Exclusive Freeport in-person demo — see KemisDisplay live and lock your spot."
+    />
+    <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Lexend+Deca:wght@600;700&family=Space+Mono&family=Unbounded:wght@700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* Concept 02 — Screen Pulse (matches web/tailwind.config.ts) */
+      :root {
+        --deep: #0d0806;
+        --bar: #140f0a;
+        --warm: #1a1410;
+        --amber: #ffaa00;
+        --amber-bright: #ffc233;
+        --cream: #fff6e8;
+        --text: #c8cedf;
+        --muted: #6b7280;
+        --violet: #7b61ff;
+        --font-sans: "Instrument Sans", system-ui, sans-serif;
+        --font-heading: "Lexend Deca", system-ui, sans-serif;
+        --font-display: "Unbounded", system-ui, sans-serif;
+        --font-mono: "Space Mono", ui-monospace, monospace;
+        --max-w: 40rem;
+        --pad-x: 1rem;
+        --safe-top: max(1rem, env(safe-area-inset-top));
+        --safe-bottom: max(1.5rem, env(safe-area-inset-bottom));
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      html {
+        -webkit-text-size-adjust: 100%;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        min-height: 100dvh;
+        font-family: var(--font-sans);
+        font-size: 1rem;
+        line-height: 1.6;
+        color: var(--cream);
+        background: linear-gradient(180deg, var(--deep) 0%, var(--bar) 45%, var(--warm) 100%);
+        background-attachment: fixed;
+        -webkit-tap-highlight-color: rgba(255, 170, 0, 0.12);
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      a {
+        color: inherit;
+      }
+
+      .page {
+        max-width: var(--max-w);
+        margin: 0 auto;
+        padding: var(--safe-top) var(--pad-x) var(--safe-bottom);
+      }
+
+      @media (min-width: 640px) {
+        :root {
+          --pad-x: 1.5rem;
+        }
+      }
+
+      /* Header lockup */
+      .header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 2rem;
+      }
+
+      .header__mark {
+        flex-shrink: 0;
+        width: 40px;
+        height: 40px;
+      }
+
+      @media (min-width: 640px) {
+        .header__mark {
+          width: 44px;
+          height: 44px;
+        }
+      }
+
+      .header__wordmark {
+        font-family: var(--font-display);
+        font-size: 1.125rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        line-height: 1.2;
+      }
+
+      .header__wordmark .kemis {
+        color: var(--amber);
+      }
+
+      .header__tagline {
+        margin: 0.15rem 0 0;
+        font-family: var(--font-sans);
+        font-size: 0.625rem;
+        font-weight: 500;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: rgba(255, 170, 0, 0.7);
+      }
+
+      @media (min-width: 640px) {
+        .header__wordmark {
+          font-size: 1.25rem;
+        }
+        .header__tagline {
+          font-size: 0.6875rem;
+        }
+      }
+
+      /* Hero */
+      .badge {
+        display: inline-block;
+        margin-bottom: 1rem;
+        padding: 0.35rem 0.85rem;
+        font-family: var(--font-mono);
+        font-size: 0.625rem;
+        font-weight: 400;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--amber);
+        background: rgba(255, 170, 0, 0.1);
+        border: 1px solid rgba(255, 170, 0, 0.55);
+        border-radius: 9999px;
+      }
+
+      .hero__title {
+        margin: 0;
+        font-family: var(--font-heading);
+        font-size: 1.75rem;
+        font-weight: 600;
+        line-height: 1.2;
+        letter-spacing: -0.02em;
+        text-wrap: balance;
+        color: var(--cream);
+      }
+
+      @media (min-width: 640px) {
+        .hero__title {
+          font-size: 2.25rem;
+        }
+      }
+
+      .hero__accent {
+        color: var(--amber);
+      }
+
+      .hero__sub {
+        margin: 1.25rem 0 0;
+        max-width: 36ch;
+        font-size: 1.0625rem;
+        color: var(--text);
+      }
+
+      .hero__note {
+        margin: 1.25rem 0 0;
+        padding: 1rem 1.125rem;
+        font-size: 0.9375rem;
+        line-height: 1.55;
+        color: rgba(255, 246, 232, 0.92);
+        background: rgba(255, 170, 0, 0.06);
+        border: 1px solid rgba(255, 170, 0, 0.2);
+        border-radius: 0.75rem;
+      }
+
+      .hero__note strong {
+        color: var(--amber);
+        font-weight: 600;
+      }
+
+      /* Sections */
+      .section {
+        margin-top: 2.75rem;
+      }
+
+      .section__title {
+        margin: 0 0 1.25rem;
+        font-family: var(--font-heading);
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--cream);
+      }
+
+      /* Benefit cards */
+      .benefits {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      @media (min-width: 640px) {
+        .benefits {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 1rem;
+        }
+      }
+
+      .benefit {
+        padding: 1.25rem 1.5rem;
+        border-radius: 1rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(26, 20, 16, 0.4);
+      }
+
+      .benefit__num {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.25rem;
+        height: 2.25rem;
+        font-size: 0.875rem;
+        font-weight: 700;
+        color: var(--deep);
+        background: var(--amber);
+        border-radius: 9999px;
+      }
+
+      .benefit__title {
+        margin: 1rem 0 0;
+        font-family: var(--font-heading);
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--cream);
+      }
+
+      .benefit__body {
+        margin: 0.5rem 0 0;
+        font-size: 0.875rem;
+        color: var(--text);
+      }
+
+      /* Bonus callout */
+      .bonus {
+        margin-top: 2.75rem;
+        padding: 1.5rem 1.375rem;
+        text-align: center;
+        border-radius: 1rem;
+        border: 1px solid rgba(255, 170, 0, 0.35);
+        background: rgba(255, 170, 0, 0.1);
+        box-shadow:
+          0 0 0 0 rgba(255, 170, 0, 0.2),
+          0 0 24px rgba(255, 170, 0, 0.12);
+      }
+
+      @media (prefers-reduced-motion: no-preference) {
+        .bonus {
+          animation: bonus-glow 2.4s ease-in-out infinite;
+        }
+      }
+
+      @keyframes bonus-glow {
+        0%,
+        100% {
+          box-shadow:
+            0 0 0 0 rgba(255, 170, 0, 0.2),
+            0 0 18px rgba(255, 170, 0, 0.12);
+        }
+        50% {
+          box-shadow:
+            0 0 0 2px rgba(255, 170, 0, 0.22),
+            0 0 32px rgba(255, 194, 51, 0.28);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .bonus {
+          animation: none;
+        }
+      }
+
+      .bonus__label {
+        display: inline-block;
+        margin-bottom: 0.75rem;
+        padding: 0.3rem 0.75rem;
+        font-family: var(--font-mono);
+        font-size: 0.625rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--deep);
+        background: var(--amber);
+        border-radius: 9999px;
+        font-weight: 700;
+      }
+
+      .bonus__headline {
+        margin: 0;
+        font-family: var(--font-heading);
+        font-size: 1.375rem;
+        font-weight: 700;
+        line-height: 1.3;
+        color: var(--cream);
+      }
+
+      .bonus__headline em {
+        font-style: normal;
+        color: var(--amber);
+      }
+
+      .bonus__price {
+        margin: 0.75rem 0 0;
+        font-size: 1rem;
+        color: var(--text);
+      }
+
+      .bonus__price strong {
+        color: var(--cream);
+        font-weight: 600;
+      }
+
+      /* Form */
+      .form-section {
+        margin-top: 2.75rem;
+      }
+
+      .form-intro {
+        margin: 0 0 1.25rem;
+        font-size: 0.9375rem;
+        color: var(--text);
+      }
+
+      .form {
+        display: flex;
+        flex-direction: column;
+        gap: 1.125rem;
+      }
+
+      .form[hidden],
+      .confirmation[hidden] {
+        display: none !important;
+      }
+
+      .field label {
+        display: block;
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: var(--muted);
+      }
+
+      .field input {
+        margin-top: 0.35rem;
+        width: 100%;
+        padding: 0.65rem 0.85rem;
+        font-family: inherit;
+        font-size: 1rem;
+        color: var(--cream);
+        background: var(--warm);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 0.5rem;
+        outline: none;
+        transition:
+          border-color 0.15s,
+          box-shadow 0.15s;
+      }
+
+      .field input::placeholder {
+        color: var(--muted);
+      }
+
+      .field input:focus {
+        border-color: rgba(255, 170, 0, 0.4);
+        box-shadow: 0 0 0 2px rgba(255, 170, 0, 0.25);
+      }
+
+      .field input:invalid:not(:placeholder-shown):not(:focus) {
+        border-color: rgba(255, 61, 113, 0.5);
+      }
+
+      .btn-primary {
+        margin-top: 0.25rem;
+        width: 100%;
+        min-height: 3rem;
+        padding: 0.85rem 1.5rem;
+        font-family: inherit;
+        font-size: 0.9375rem;
+        font-weight: 600;
+        color: var(--deep);
+        background: var(--amber);
+        border: none;
+        border-radius: 9999px;
+        cursor: pointer;
+        transition: background 0.15s;
+      }
+
+      .btn-primary:hover:not(:disabled) {
+        background: var(--amber-bright);
+      }
+
+      .btn-primary:focus-visible {
+        outline: 2px solid var(--amber);
+        outline-offset: 3px;
+      }
+
+      .btn-primary:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+      }
+
+      .confirmation {
+        padding: 1.25rem 1.375rem;
+        border-radius: 0.75rem;
+        border: 1px solid rgba(255, 170, 0, 0.3);
+        background: rgba(255, 170, 0, 0.08);
+      }
+
+      .confirmation__title {
+        margin: 0;
+        font-family: var(--font-heading);
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--amber);
+      }
+
+      .confirmation__body {
+        margin: 0.5rem 0 0;
+        font-size: 0.9375rem;
+        color: var(--text);
+      }
+
+      .form-error {
+        margin: 0 0 1rem;
+        padding: 0.85rem 1rem;
+        font-size: 0.875rem;
+        color: #ffb4c8;
+        background: rgba(255, 61, 113, 0.12);
+        border: 1px solid rgba(255, 61, 113, 0.35);
+        border-radius: 0.5rem;
+      }
+
+      .form-error[hidden] {
+        display: none !important;
+      }
+
+      .field-honeypot {
+        position: absolute;
+        left: -9999px;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+      }
+
+      .field-optional label span {
+        font-weight: 400;
+        color: var(--muted);
+      }
+
+      /* Ready now CTA */
+      .ready {
+        margin-top: 2.75rem;
+        padding-top: 2rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        text-align: center;
+      }
+
+      .ready__line {
+        margin: 0 0 1.25rem;
+        font-family: var(--font-heading);
+        font-size: 1.0625rem;
+        font-weight: 600;
+        color: var(--cream);
+      }
+
+      .ready__actions {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+
+      @media (min-width: 480px) {
+        .ready__actions {
+          flex-direction: row;
+          justify-content: center;
+          flex-wrap: wrap;
+        }
+      }
+
+      .btn-secondary {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        min-height: 3rem;
+        padding: 0.75rem 1.5rem;
+        font-size: 0.9375rem;
+        font-weight: 600;
+        text-decoration: none;
+        color: var(--amber);
+        background: rgba(255, 170, 0, 0.1);
+        border: 1px solid rgba(255, 170, 0, 0.5);
+        border-radius: 9999px;
+        transition:
+          background 0.15s,
+          border-color 0.15s;
+      }
+
+      .btn-secondary:hover {
+        background: rgba(255, 170, 0, 0.15);
+        border-color: var(--amber);
+      }
+
+      .btn-secondary:focus-visible {
+        outline: 2px solid var(--amber);
+        outline-offset: 3px;
+      }
+
+      /* Footer */
+      .footer {
+        margin-top: 3rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        text-align: center;
+      }
+
+      .footer__brand {
+        font-family: var(--font-display);
+        font-size: 1rem;
+        font-weight: 700;
+      }
+
+      .footer__brand .kemis {
+        color: var(--amber);
+      }
+
+      .footer__loc {
+        margin: 0.5rem 0 0;
+        font-size: 0.8125rem;
+        color: var(--muted);
+      }
+
+      .footer__copy {
+        margin: 1rem 0 0;
+        font-size: 0.6875rem;
+        color: rgba(107, 114, 128, 0.85);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <header class="header">
+        <svg
+          class="header__mark"
+          viewBox="0 0 80 80"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <rect
+            x="6"
+            y="10"
+            width="68"
+            height="52"
+            rx="12"
+            fill="none"
+            stroke="#FFAA00"
+            stroke-width="3"
+          />
+          <rect x="12" y="16" width="56" height="40" rx="8" fill="#FFAA00" opacity="0.06" />
+          <line
+            x1="30"
+            y1="24"
+            x2="30"
+            y2="48"
+            stroke="#FFAA00"
+            stroke-width="4"
+            stroke-linecap="round"
+          />
+          <line
+            x1="30"
+            y1="36"
+            x2="50"
+            y2="24"
+            stroke="#FFAA00"
+            stroke-width="4"
+            stroke-linecap="round"
+          />
+          <line
+            x1="30"
+            y1="36"
+            x2="50"
+            y2="48"
+            stroke="#FFAA00"
+            stroke-width="4"
+            stroke-linecap="round"
+          />
+          <circle cx="40" cy="68" r="3" fill="#7B61FF" />
+          <circle
+            cx="40"
+            cy="68"
+            r="6"
+            fill="none"
+            stroke="#7B61FF"
+            stroke-width="1.5"
+            opacity="0.5"
+          />
+          <circle
+            cx="40"
+            cy="68"
+            r="10"
+            fill="none"
+            stroke="#7B61FF"
+            stroke-width="1"
+            opacity="0.25"
+          />
+        </svg>
+        <div>
+          <div class="header__wordmark" aria-label="KemisDisplay">
+            <span class="kemis">Kemis</span><span>Display</span>
+          </div>
+          <p class="header__tagline">Digital Signage Platform</p>
+        </div>
+      </header>
+
+      <main>
+        <section class="hero" aria-labelledby="hero-title">
+          <span class="badge">Freeport Only</span>
+          <h1 id="hero-title" class="hero__title">
+            Exclusive Freeport live demo —
+            <span class="hero__accent">see your screens work for your business.</span>
+          </h1>
+          <p class="hero__sub">
+            Turn the TVs you already have into a tool that brings customers back and
+            moves what you&apos;re selling — without new hardware or a tech team on
+            payroll.
+          </p>
+          <p class="hero__note">
+            <strong>Date &amp; location:</strong> to be announced. Register your
+            interest now and we&apos;ll lock in your spot before seats fill up.
+          </p>
+        </section>
+
+        <section class="section" aria-labelledby="benefits-heading">
+          <h2 id="benefits-heading" class="section__title">What you&apos;ll get at the event</h2>
+          <ol class="benefits">
+            <li class="benefit">
+              <span class="benefit__num" aria-hidden="true">1</span>
+              <h3 class="benefit__title">See the tech live</h3>
+              <p class="benefit__body">
+                Watch KemisDisplay running on a real screen — menus, promos, and
+                playlists updating the way your business would use them.
+              </p>
+            </li>
+            <li class="benefit">
+              <span class="benefit__num" aria-hidden="true">2</span>
+              <h3 class="benefit__title">Get walked through how it works</h3>
+              <p class="benefit__body">
+                No jargon. We&apos;ll show you upload, publish, and control — so you
+                know exactly what you&apos;re signing up for.
+              </p>
+            </li>
+            <li class="benefit">
+              <span class="benefit__num" aria-hidden="true">3</span>
+              <h3 class="benefit__title">Learn how to grow with your screen</h3>
+              <p class="benefit__body">
+                Leave with practical ideas for your shop, restaurant, or venue — using
+                the screens you already own.
+              </p>
+            </li>
+          </ol>
+        </section>
+
+        <aside class="bonus" aria-labelledby="bonus-heading">
+          <span class="bonus__label">Event bonus</span>
+          <h2 id="bonus-heading" class="bonus__headline">
+            <em>30 days absolutely free</em><br />
+            on KemisDisplay
+          </h2>
+          <p class="bonus__price">
+            Then just <strong>$25/month</strong> — for everyone who attends.
+          </p>
+        </aside>
+
+        <section class="form-section" aria-labelledby="form-heading">
+          <h2 id="form-heading" class="section__title">Register your interest</h2>
+          <p class="form-intro">
+            Three fields. We&apos;ll reach out when the date and venue are set.
+          </p>
+
+          <p id="form-error" class="form-error" hidden role="alert"></p>
+
+          <form id="interest-form" class="form" novalidate>
+            <div class="field field-honeypot" aria-hidden="true">
+              <label for="website">Website</label>
+              <input
+                id="website"
+                name="website"
+                type="text"
+                tabindex="-1"
+                autocomplete="off"
+              />
+            </div>
+            <div class="field">
+              <label for="name">Name</label>
+              <input
+                id="name"
+                name="name"
+                type="text"
+                autocomplete="name"
+                required
+                placeholder="Your name"
+              />
+            </div>
+            <div class="field">
+              <label for="business">Business Name</label>
+              <input
+                id="business"
+                name="business"
+                type="text"
+                autocomplete="organization"
+                required
+                placeholder="Your business"
+              />
+            </div>
+            <div class="field">
+              <label for="phone">Contact Number</label>
+              <input
+                id="phone"
+                name="phone"
+                type="tel"
+                inputmode="tel"
+                autocomplete="tel"
+                required
+                placeholder="242-555-1234"
+              />
+            </div>
+            <div class="field field-optional">
+              <label for="email">Email <span>(optional — for event updates)</span></label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                inputmode="email"
+                autocomplete="email"
+                placeholder="you@yourbusiness.com"
+              />
+            </div>
+            <button type="submit" class="btn-primary" id="submit-btn">
+              Register My Interest
+            </button>
+          </form>
+
+          <div
+            id="confirmation"
+            class="confirmation"
+            hidden
+            role="status"
+            aria-live="polite"
+          >
+            <p class="confirmation__title">You&apos;re on the list!</p>
+            <p class="confirmation__body">
+              We&apos;ll contact you to confirm details once the date and location
+              are set.
+            </p>
+          </div>
+        </section>
+
+        <section class="ready" aria-labelledby="ready-heading">
+          <p id="ready-heading" class="ready__line">Ready to get started right away?</p>
+          <div class="ready__actions">
+            <a class="btn-secondary" href="tel:+12424479692">Call 242-447-9692</a>
+            <a
+              class="btn-secondary"
+              href="https://wa.me/12424479692"
+              target="_blank"
+              rel="noopener noreferrer"
+            >WhatsApp us</a>
+          </div>
+        </section>
+      </main>
+
+      <footer class="footer">
+        <p class="footer__brand" aria-hidden="true">
+          <span class="kemis">Kemis</span><span>Display</span>
+        </p>
+        <p class="footer__loc">Freeport, The Bahamas</p>
+        <p class="footer__copy">&copy; <span id="year"></span> KemisDisplay</p>
+      </footer>
+    </div>
+
+    <script>
+      (function () {
+        document.getElementById("year").textContent = String(new Date().getFullYear());
+
+        var form = document.getElementById("interest-form");
+        var confirmation = document.getElementById("confirmation");
+        var submitBtn = document.getElementById("submit-btn");
+        var formError = document.getElementById("form-error");
+
+        function showError(message) {
+          formError.textContent = message;
+          formError.hidden = false;
+        }
+
+        function clearError() {
+          formError.textContent = "";
+          formError.hidden = true;
+        }
+
+        function showSuccess() {
+          form.hidden = true;
+          formError.hidden = true;
+          confirmation.hidden = false;
+        }
+
+        form.addEventListener("submit", function (e) {
+          e.preventDefault();
+          clearError();
+
+          var name = form.name.value.trim();
+          var business = form.business.value.trim();
+          var phone = form.phone.value.trim();
+          var email = form.email.value.trim();
+
+          if (!name || !business || !phone) {
+            if (!name) form.name.focus();
+            else if (!business) form.business.focus();
+            else form.phone.focus();
+            return;
+          }
+
+          submitBtn.disabled = true;
+          submitBtn.textContent = "Sending…";
+
+          var payload = {
+            name: name,
+            business: business,
+            phone: phone,
+            website: form.website.value,
+          };
+          if (email) payload.email = email;
+
+          fetch("/api/freeport-interest", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          })
+            .then(function (res) {
+              return res.json().then(function (data) {
+                return { ok: res.ok, data: data };
+              });
+            })
+            .then(function (result) {
+              if (!result.ok) {
+                var msg =
+                  (result.data && result.data.detail) ||
+                  "Something went wrong. Please try again or call 242-447-9692.";
+                showError(msg);
+                return;
+              }
+              showSuccess();
+            })
+            .catch(function () {
+              showError(
+                "Could not reach the server. Check your connection or call 242-447-9692.",
+              );
+            })
+            .finally(function () {
+              submitBtn.disabled = false;
+              submitBtn.textContent = "Register My Interest";
+            });
+        });
+      })();
+    </script>
+  </body>
+</html>

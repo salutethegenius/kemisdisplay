@@ -1,7 +1,14 @@
 import { withSentryConfig } from "@sentry/nextjs";
 
 /** @type {import('next').NextConfig} */
-const nextConfig = {};
+const nextConfig = {
+  async rewrites() {
+    return [
+      { source: "/freeport", destination: "/freeport/index.html" },
+      { source: "/freeport/", destination: "/freeport/index.html" },
+    ];
+  },
+};
 
 export default withSentryConfig(nextConfig, {
   org: "kgc-dr",

@@ -53,6 +53,9 @@
 |----------|---------|
 | `NEXT_PUBLIC_API_URL` | `https://your-api.up.railway.app` | No trailing slash. |
 | `NEXT_PUBLIC_APP_URL` | `https://your-app.vercel.app` | Your canonical site URL (optional but useful for links). |
+| `RESEND_API_KEY` | `re_…` | [Resend](https://resend.com) API key — powers `/freeport/` lead emails. |
+| `RESEND_FROM_EMAIL` | `KemisDisplay <notifications@kemisdisplay.com>` | Verified sender domain in Resend. |
+| `FREEPORT_LEADS_NOTIFY_EMAIL` | `you@domain.com` | Optional. Who gets alerted on each registration (comma-separated). Defaults to `legal@kemisdisplay.com`. |
 
 5. **Redeploy** after changing env vars.
 
