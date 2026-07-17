@@ -1215,7 +1215,7 @@ function AccountPage() {
     typeof window !== "undefined" && user?.account_slug
       ? `${window.location.host}/${user.account_slug}/`
       : user?.account_slug
-        ? `kemisdisplay.com/${user.account_slug}/`
+        ? `www.kemisdisplay.com/${user.account_slug}/`
         : "";
 
   async function saveAccountSlug(e: React.FormEvent) {

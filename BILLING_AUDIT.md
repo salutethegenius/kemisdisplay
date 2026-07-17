@@ -55,7 +55,7 @@ Public Checkout sells **Starter only** (`STRIPE_PRICE_ID_STARTER` = `price_1Tu2t
 - `STRIPE_SECRET_KEY`
 - `STRIPE_WEBHOOK_SECRET`
 - `STRIPE_PRICE_ID_STARTER`
-- `WEB_APP_URL` (e.g. `https://kemisdisplay.com`)
+- `WEB_APP_URL` (e.g. `https://www.kemisdisplay.com`)
 - `DEV_BYPASS_BILLING=0`
 
 Webhook URL: `https://<api-host>/billing/webhook`

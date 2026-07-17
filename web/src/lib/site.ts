@@ -1,4 +1,4 @@
-const DEFAULT_SITE = "https://kemisdisplay.com";
+const DEFAULT_SITE = "https://www.kemisdisplay.com";
 
 /** Production web origin (no trailing slash). Used for canonical URLs, OG, sitemap. */
 export function getSiteUrl(): string {

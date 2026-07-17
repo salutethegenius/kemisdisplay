@@ -19,7 +19,7 @@
 |----------|---------|--------|
 | `DATABASE_URL` | *(from Postgres plugin)* | We normalize `postgres://` → `postgresql://` automatically. |
 | `JWT_SECRET` | 64+ random chars | Required in production. |
-| `CORS_ORIGINS` | `https://your-app.vercel.app,https://kemisdisplay.com` | Comma-separated, **no trailing slashes**. Must include every browser origin that calls the API. |
+| `CORS_ORIGINS` | `https://www.kemisdisplay.com,https://kemisdisplay.com` | Comma-separated, **no trailing slashes**. Include both www and apex while apex redirects. |
 | `PUBLIC_API_BASE_URL` | `https://your-api.up.railway.app` | **No trailing slash.** Used in uploaded file URLs (`/files/...`). |
 | `UPLOAD_DIR` | `/data/uploads` | Use a **persistent volume** path if you want uploads to survive redeploys (see below). |
 | `MENU_RENDER_TMP` | `/tmp/menu_render` | Ephemeral temp is fine. |
@@ -30,7 +30,7 @@
 | `STRIPE_SECRET_KEY` | `sk_live_…` | Live secret key (or restricted key with Checkout + Billing + Customers). |
 | `STRIPE_WEBHOOK_SECRET` | `whsec_…` | From Stripe → Developers → Webhooks → endpoint signing secret. |
 | `STRIPE_PRICE_ID_STARTER` | `price_1Tu2t42a7Qn43sncBvarThae` | Live KemisDisplay Starter $25/mo price. |
-| `WEB_APP_URL` | `https://kemisdisplay.com` | No trailing slash. Checkout success/cancel + Customer Portal return URL. |
+| `WEB_APP_URL` | `https://www.kemisdisplay.com` | No trailing slash. Canonical site (apex redirects here). Checkout success/cancel + Customer Portal return URL. |
 
 4. **Mux webhook URL:** In the Mux dashboard, add a webhook endpoint pointing to `https://<your-public-api-host>/mux/webhook` and subscribe at least to `video.asset.ready`, `video.asset.static_rendition.ready`, and `video.asset.errored`.
 

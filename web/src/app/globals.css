@@ -82,10 +82,29 @@ body {
   .demo-cta-glow {
     animation: demo-cta-glow-pulse 2.4s ease-in-out infinite;
   }
+
+  .hero-demo-video {
+    transform: translate(-50%, -50%) scale(1.06);
+    animation: hero-demo-drift 28s ease-in-out infinite alternate;
+  }
+
+  .hero-overlay-in {
+    animation: hero-overlay-fade 0.9s ease-out both;
+  }
+
+  .hero-overlay-in-delay {
+    animation: hero-overlay-fade 0.9s ease-out 0.15s both;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .demo-cta-glow {
+    animation: none;
+  }
+
+  .hero-demo-video,
+  .hero-overlay-in,
+  .hero-overlay-in-delay {
     animation: none;
   }
 }
@@ -101,6 +120,26 @@ body {
     box-shadow:
       0 0 0 3px rgba(255, 170, 0, 0.28),
       0 0 32px rgba(255, 194, 51, 0.42);
+  }
+}
+
+@keyframes hero-demo-drift {
+  from {
+    transform: translate(-50%, -50%) scale(1.04);
+  }
+  to {
+    transform: translate(-50%, -50%) scale(1.12);
+  }
+}
+
+@keyframes hero-overlay-fade {
+  from {
+    opacity: 0;
+    transform: translateY(0.75rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
