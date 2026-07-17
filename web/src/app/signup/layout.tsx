@@ -3,7 +3,7 @@ import { getSiteUrl } from "@/lib/site";
 
 const title = "Start free trial";
 const description =
-  "Create a KemisDisplay account — 14-day trial, up to 4 screens. Upload media and run browser-based digital signage on any TV.";
+  "Create a KemisDisplay account — 14-day trial, up to 2 screens. Upload media and run browser-based digital signage on any TV.";
 
 export const metadata: Metadata = {
   title,

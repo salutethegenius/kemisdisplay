@@ -69,7 +69,7 @@ export default function SignupPage() {
           Create account
         </h1>
         <p className="mt-2 text-sm text-brand-text">
-          14-day free trial — up to 4 screens. Then $25.00/mo Starter. Already
+          14-day free trial — up to 2 screens. Then $25.00/mo Starter. Already
           have an account?{" "}
           <Link href="/login" className="text-brand-amber hover:underline">
             Log in

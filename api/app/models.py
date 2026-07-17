@@ -36,7 +36,7 @@ class User(Base):
         String(32), default="trialing"
     )  # trialing | starter | pro | business
     trial_ends_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
-    kemispay_customer_id: Mapped[Optional[str]] = mapped_column(String(128), nullable=True)
+    stripe_customer_id: Mapped[Optional[str]] = mapped_column(String(128), nullable=True)
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
     onboarding_dismissed_at: Mapped[Optional[datetime]] = mapped_column(
         DateTime(timezone=True), nullable=True

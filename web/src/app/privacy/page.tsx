@@ -90,8 +90,8 @@ export default function PrivacyPage() {
           to operate, secure, and improve the Service.
         </p>
         <p>
-          <strong>Billing information</strong> is processed by our payment
-          partner. We store a customer reference but not full card details.
+          <strong>Billing information</strong> is processed by Stripe. We store
+          a Stripe customer reference but not full card details.
         </p>
         <p>
           We do not knowingly collect special categories of personal data
@@ -151,9 +151,8 @@ export default function PrivacyPage() {
             delivery in some cases.
           </li>
           <li>
-            <strong>Payment processing</strong> &mdash; our billing partner in
-            the KGC family processes subscription payments. Card data is
-            handled by them, not by us.
+            <strong>Payment processing</strong> &mdash; Stripe processes
+            subscription payments. Card data is handled by Stripe, not by us.
           </li>
           <li>
             <strong>Email and support tools</strong> &mdash; transactional

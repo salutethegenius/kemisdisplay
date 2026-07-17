@@ -14,7 +14,19 @@ from sqlalchemy.exc import OperationalError
 from app.config import settings
 from app.database import Base, SessionLocal, engine
 from app.models import User
-from app.routers import admin, auth, jobs, media, menus, mux_webhook, onboarding, playlist, public_display, screens
+from app.routers import (
+    admin,
+    auth,
+    billing,
+    jobs,
+    media,
+    menus,
+    mux_webhook,
+    onboarding,
+    playlist,
+    public_display,
+    screens,
+)
 from app.services.r2_storage import check_r2_connection
 
 
@@ -75,6 +87,7 @@ app.include_router(admin.router, prefix="/admin", tags=["admin"])
 app.include_router(menus.router, prefix="/menus", tags=["menus"])
 app.include_router(jobs.router, prefix="/jobs", tags=["jobs"])
 app.include_router(mux_webhook.router, prefix="/mux", tags=["mux"])
+app.include_router(billing.router, prefix="/billing", tags=["billing"])
 app.include_router(onboarding.router, prefix="/onboarding", tags=["onboarding"])
 
 

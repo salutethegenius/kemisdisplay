@@ -87,6 +87,7 @@ Optional on the API host for menu renders: **ffmpeg** on `PATH`, and **Playwrigh
 | Menus | `GET/POST /menus`, `GET/PUT /menus/{id}`, `GET /menus/{id}/preview`, `POST /menus/{id}/render` (202 + job) |
 | Render jobs | `GET /jobs/{job_id}` |
 | Display (public) | `GET /public/screens/{slug}/playlist?token=...` |
+| Billing | `POST /billing/checkout`, `POST /billing/portal`, `POST /billing/webhook` |
 
 When `ffprobe` is installed on the API host, video duration is detected for display in the media library (optional metadata).
 
@@ -96,5 +97,5 @@ When `ffprobe` is installed on the API host, video duration is detected for disp
 - Point **kemisdisplay.com** at Vercel; set `NEXT_PUBLIC_API_URL` to your API origin (e.g. `https://api.kemisdisplay.com`).
 - Restrict `CORS_ORIGINS` to the real web origin (comma-separated; include preview URLs if you use them).
 - If videos are served from **Cloudflare R2** (public bucket URLs in playlists), configure the bucket **CORS** to allow `GET` from your web origins (for example `https://www.kemisdisplay.com` and `https://kemisdisplay.com`). Otherwise some browsers and TVs fail to load `<video src="…">` with no visible API error.
-- Set `DEV_BYPASS_BILLING=0` and wire **KemisPay** for subscriptions (Phase 3).
+- Set `DEV_BYPASS_BILLING=0`. Stripe Billing is wired for **Starter ($25/mo, 2 screens)** — see `STRIPE_*` and `WEB_APP_URL` in [`api/.env.example`](api/.env.example) and **[DEPLOY.md](DEPLOY.md)**.
 - Railway’s `DATABASE_URL` may use the `postgres://` scheme; the API normalizes it to `postgresql://` for SQLAlchemy.

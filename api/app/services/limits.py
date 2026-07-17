@@ -8,7 +8,7 @@ from app.config import settings
 from app.models import Media, Screen, User
 
 # Trialing users use effective_tier "starter" (see effective_tier) — same screen cap as paid Starter.
-SCREEN_LIMITS = {"starter": 4, "pro": 10, "business": 25}
+SCREEN_LIMITS = {"starter": 2, "pro": 10, "business": 25}
 STORAGE_BYTES = {"starter": 1 << 30, "pro": 5 << 30, "business": 20 << 30}
 
 

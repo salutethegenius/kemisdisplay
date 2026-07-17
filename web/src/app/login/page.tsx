@@ -68,7 +68,7 @@ export default function LoginPage() {
           <Link href="/signup" className="text-brand-amber hover:underline">
             Start a trial
           </Link>{" "}
-          — 14 days free, 4 screens, then $25.00/mo Starter.
+          — 14 days free, 2 screens, then $25.00/mo Starter.
         </p>
         <form onSubmit={onSubmit} className="mt-8 space-y-4">
           <div>

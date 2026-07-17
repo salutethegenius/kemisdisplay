@@ -28,6 +28,7 @@ def _user_out(u: User) -> UserOut:
         trial_ends_at=u.trial_ends_at,
         effective_tier=effective_tier(u),
         is_admin=bool(u.is_admin),
+        has_billing_customer=bool(u.stripe_customer_id),
     )
 
 

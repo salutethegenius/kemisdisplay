@@ -13,6 +13,7 @@ class UserOut(BaseModel):
     trial_ends_at: datetime
     effective_tier: str | None = None
     is_admin: bool = False
+    has_billing_customer: bool = False
 
     model_config = {"from_attributes": True}
 

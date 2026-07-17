@@ -19,6 +19,7 @@ export type User = {
   trial_ends_at: string;
   effective_tier: string | null;
   is_admin?: boolean;
+  has_billing_customer?: boolean;
 };
 
 type AuthState = {

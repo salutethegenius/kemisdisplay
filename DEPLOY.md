@@ -27,18 +27,24 @@
 | `ADMIN_EMAILS` | `you@domain.com` | Optional; promotes existing users to admin on boot. |
 | `MUX_TOKEN_ID` / `MUX_TOKEN_SECRET` | *(Mux dashboard → Access Tokens)* | Optional. When both are set, **new video uploads** and **menu-render MP4s** are sent to Mux (CDN + static `highest.mp4`). Images still use `UPLOAD_DIR` + `/files`. |
 | `MUX_WEBHOOK_SIGNING_SECRET` | *(Mux → Webhooks → endpoint signing secret)* | Required in production if you use Mux: the API verifies `POST /mux/webhook` with this secret. |
+| `STRIPE_SECRET_KEY` | `sk_live_…` | Live secret key (or restricted key with Checkout + Billing + Customers). |
+| `STRIPE_WEBHOOK_SECRET` | `whsec_…` | From Stripe → Developers → Webhooks → endpoint signing secret. |
+| `STRIPE_PRICE_ID_STARTER` | `price_1Tu2t42a7Qn43sncBvarThae` | Live KemisDisplay Starter $25/mo price. |
+| `WEB_APP_URL` | `https://kemisdisplay.com` | No trailing slash. Checkout success/cancel + Customer Portal return URL. |
 
 4. **Mux webhook URL:** In the Mux dashboard, add a webhook endpoint pointing to `https://<your-public-api-host>/mux/webhook` and subscribe at least to `video.asset.ready`, `video.asset.static_rendition.ready`, and `video.asset.errored`.
 
-5. **Disk / uploads:** Railway’s filesystem is ephemeral unless you add a **volume**. Mount e.g. `/data` and set `UPLOAD_DIR=/data/uploads` so **images** and any **non-Mux** video persist. Mux-hosted video does not need disk for the MP4 itself.
+5. **Stripe webhook URL:** In the Stripe Dashboard (live mode), add an endpoint pointing to `https://<your-public-api-host>/billing/webhook` and subscribe to `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted`, and `invoice.payment_failed`. Enable the **Customer Portal** (cancel + update payment method). Product/price already created: **KemisDisplay Starter** / `price_1Tu2t42a7Qn43sncBvarThae`.
 
-6. **Migrations:** `api/railway.json` runs **`alembic upgrade head`** as `preDeployCommand` before each deploy.
+6. **Disk / uploads:** Railway’s filesystem is ephemeral unless you add a **volume**. Mount e.g. `/data` and set `UPLOAD_DIR=/data/uploads` so **images** and any **non-Mux** video persist. Mux-hosted video does not need disk for the MP4 itself.
 
-7. **Start command:** `uvicorn` binds `0.0.0.0` and **`PORT`** (Railway sets this). Defined in `api/railway.json`.
+7. **Migrations:** `api/railway.json` runs **`alembic upgrade head`** as `preDeployCommand` before each deploy.
 
-8. **Health check:** `GET /health` (configured in `railway.json`).
+8. **Start command:** `uvicorn` binds `0.0.0.0` and **`PORT`** (Railway sets this). Defined in `api/railway.json`.
 
-9. **Menu video rendering:** Needs **ffmpeg** (via `nixpacks.toml`) and **Playwright + Chromium** for captures. Do **not** run `playwright install` in Railway `startCommand` — it blocks `uvicorn` and `/health` will time out. After a successful deploy, use **Railway Shell** once: `playwright install chromium` (or bake browsers into a custom Dockerfile). Until then, menu jobs fail with a clear error; the rest of the API works.
+9. **Health check:** `GET /health` (configured in `railway.json`).
+
+10. **Menu video rendering:** Needs **ffmpeg** (via `nixpacks.toml`) and **Playwright + Chromium** for captures. Do **not** run `playwright install` in Railway `startCommand` — it blocks `uvicorn` and `/health` will time out. After a successful deploy, use **Railway Shell** once: `playwright install chromium` (or bake browsers into a custom Dockerfile). Until then, menu jobs fail with a clear error; the rest of the API works.
 
 ---
 
@@ -53,9 +59,10 @@
 |----------|---------|
 | `NEXT_PUBLIC_API_URL` | `https://your-api.up.railway.app` | No trailing slash. |
 | `NEXT_PUBLIC_APP_URL` | `https://your-app.vercel.app` | Your canonical site URL (optional but useful for links). |
-| `RESEND_API_KEY` | `re_…` | [Resend](https://resend.com) API key — powers `/freeport/` lead emails. |
+| `RESEND_API_KEY` | `re_…` | [Resend](https://resend.com) API key — powers `/freeport/` and `/schedule-demo` lead emails. |
 | `RESEND_FROM_EMAIL` | `KemisDisplay <notifications@kemisdisplay.com>` | Verified sender domain in Resend. |
-| `FREEPORT_LEADS_NOTIFY_EMAIL` | `you@domain.com` | Optional. Who gets alerted on each registration (comma-separated). Defaults to `legal@kemisdisplay.com`. |
+| `FREEPORT_LEADS_NOTIFY_EMAIL` | `you@domain.com` | Optional. Who gets alerted on Freeport + schedule-demo leads (comma-separated). Defaults to `legal@kemisdisplay.com`. |
+| `RESEND_LEADS_NOTIFY_EMAIL` | `you@domain.com` | Optional alias for the same notify list. |
 
 5. **Redeploy** after changing env vars.
 

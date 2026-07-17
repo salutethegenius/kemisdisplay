@@ -1,8 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { MenuEditor, MenuList, MenuNew } from "@/components/menu-views";
 import { OnboardingChecklist } from "@/components/onboarding-checklist";
@@ -1186,6 +1185,11 @@ function AccountPage() {
   const [slugErr, setSlugErr] = useState<string | null>(null);
   const [slugSaved, setSlugSaved] = useState(false);
   const [savingSlug, setSavingSlug] = useState(false);
+  const [billingErr, setBillingErr] = useState<string | null>(null);
+  const [billingBusy, setBillingBusy] = useState<"checkout" | "portal" | null>(
+    null,
+  );
+  const [billingStatus, setBillingStatus] = useState<string | null>(null);
 
   useEffect(() => {
     void refreshUser();
@@ -1194,6 +1198,18 @@ function AccountPage() {
   useEffect(() => {
     if (user?.account_slug) setAccountSlug(user.account_slug);
   }, [user?.account_slug]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const value = new URLSearchParams(window.location.search).get("billing");
+    setBillingStatus(value);
+  }, []);
+
+  const isPaid = ["starter", "pro", "business"].includes(user?.plan ?? "");
+  const trialExpired =
+    Boolean(user?.trial_ends_at) &&
+    new Date(user!.trial_ends_at).getTime() < Date.now() &&
+    !isPaid;
 
   const shortUrlPrefix =
     typeof window !== "undefined" && user?.account_slug
@@ -1223,6 +1239,56 @@ function AccountPage() {
     setTimeout(() => setSlugSaved(false), 2000);
   }
 
+  async function startCheckout() {
+    if (!token) return;
+    setBillingErr(null);
+    setBillingBusy("checkout");
+    try {
+      const res = await apiFetch("/billing/checkout", {
+        method: "POST",
+        token,
+      });
+      const d = (await res.json().catch(() => ({}))) as {
+        url?: string;
+        detail?: string;
+      };
+      if (!res.ok || !d.url) {
+        setBillingErr(String(d.detail || "Could not start checkout."));
+        return;
+      }
+      window.location.href = d.url;
+    } catch {
+      setBillingErr("Could not reach billing. Try again.");
+    } finally {
+      setBillingBusy(null);
+    }
+  }
+
+  async function openPortal() {
+    if (!token) return;
+    setBillingErr(null);
+    setBillingBusy("portal");
+    try {
+      const res = await apiFetch("/billing/portal", {
+        method: "POST",
+        token,
+      });
+      const d = (await res.json().catch(() => ({}))) as {
+        url?: string;
+        detail?: string;
+      };
+      if (!res.ok || !d.url) {
+        setBillingErr(String(d.detail || "Could not open billing portal."));
+        return;
+      }
+      window.location.href = d.url;
+    } catch {
+      setBillingErr("Could not reach billing. Try again.");
+    } finally {
+      setBillingBusy(null);
+    }
+  }
+
   return (
     <div className="max-w-lg">
       <h1 className="font-heading text-2xl font-semibold text-brand-cream">Account</h1>
@@ -1247,6 +1313,59 @@ function AccountPage() {
             ? new Date(user.trial_ends_at).toLocaleString()
             : "—"}
         </p>
+
+        <div className="border-t border-white/10 pt-4">
+          <p className="text-brand-muted">Billing</p>
+          <p className="mt-1 text-brand-cream">
+            Starter is <span className="font-semibold">$25/month</span> for up to{" "}
+            <span className="font-semibold">2 screens</span>. Cancel anytime from
+            Manage billing.
+          </p>
+          {billingStatus === "success" && (
+            <p className="mt-2 text-sm text-brand-amber">
+              Payment received. Your Starter plan will activate in a moment — refresh
+              if the plan still shows as trial.
+            </p>
+          )}
+          {billingStatus === "cancel" && (
+            <p className="mt-2 text-sm text-brand-muted">
+              Checkout canceled. You can subscribe whenever you&apos;re ready.
+            </p>
+          )}
+          {trialExpired && (
+            <p className="mt-2 text-sm text-red-300">
+              Your trial has ended. Subscribe to keep publishing to your screens.
+            </p>
+          )}
+          <div className="mt-3 flex flex-wrap gap-2">
+            {!isPaid && (
+              <button
+                type="button"
+                disabled={billingBusy !== null}
+                onClick={() => void startCheckout()}
+                className="rounded-lg bg-brand-amber px-4 py-2 text-sm font-semibold text-brand-deep transition hover:bg-brand-amber-bright disabled:opacity-50"
+              >
+                {billingBusy === "checkout"
+                  ? "Redirecting…"
+                  : "Subscribe — $25/mo"}
+              </button>
+            )}
+            {(user?.has_billing_customer || isPaid) && (
+              <button
+                type="button"
+                disabled={billingBusy !== null}
+                onClick={() => void openPortal()}
+                className="rounded-lg border border-white/15 px-4 py-2 text-sm text-brand-cream transition hover:bg-brand-warm disabled:opacity-50"
+              >
+                {billingBusy === "portal" ? "Opening…" : "Manage billing"}
+              </button>
+            )}
+          </div>
+          {billingErr && (
+            <p className="mt-2 text-sm text-red-400">{billingErr}</p>
+          )}
+        </div>
+
         <form onSubmit={(e) => void saveAccountSlug(e)} className="pt-2">
           <label className="text-brand-muted">TV link prefix</label>
           <p className="mt-1 text-xs text-brand-muted">
@@ -1283,11 +1402,6 @@ function AccountPage() {
           </div>
           {slugErr && <p className="mt-2 text-sm text-red-400">{slugErr}</p>}
         </form>
-        <p className="text-brand-muted">
-          Billing via KemisPay will appear here in Phase 3. For now, use{" "}
-          <code className="text-brand-text">DEV_BYPASS_BILLING</code> in local API
-          env for unrestricted dev.
-        </p>
       </div>
     </div>
   );

@@ -44,6 +44,12 @@ class Settings(BaseSettings):
     # Optional error monitoring (https://sentry.io). Same org/project as web when set.
     sentry_dsn: str = ""
     sentry_traces_sample_rate: float = Field(default=0.0, ge=0.0, le=1.0)
+    # Stripe Billing (Starter subscription). Leave unset locally to disable checkout/portal.
+    stripe_secret_key: str = ""
+    stripe_webhook_secret: str = ""
+    stripe_price_id_starter: str = ""
+    # Public marketing/app origin for Checkout success/cancel + Portal return URLs.
+    web_app_url: str = "https://kemisdisplay.com"
 
     @field_validator("jwt_secret", mode="after")
     @classmethod
@@ -92,6 +98,13 @@ class Settings(BaseSettings):
             and self.r2_access_key_id.strip()
             and self.r2_secret_access_key.strip()
             and self.r2_public_url.strip()
+        )
+
+    @property
+    def stripe_enabled(self) -> bool:
+        return bool(
+            self.stripe_secret_key.strip()
+            and self.stripe_price_id_starter.strip()
         )
 
 

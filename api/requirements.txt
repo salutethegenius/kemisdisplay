@@ -16,3 +16,4 @@ httpx>=0.27.0,<1
 boto3>=1.34.0,<2
 slowapi==0.1.9
 sentry-sdk[fastapi]>=2.19.0,<3
+stripe>=11.0.0,<13

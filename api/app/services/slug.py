@@ -13,6 +13,7 @@ RESERVED_ACCOUNT_SLUGS = frozenset(
         "dashboard",
         "display",
         "demo",
+        "schedule-demo",
         "privacy",
         "terms",
         "admin",
@@ -29,7 +30,9 @@ RESERVED_ACCOUNT_SLUGS = frozenset(
         "menus",
         "jobs",
         "mux",
+        "billing",
         "onboarding",
+        "freeport",
     }
 )
 

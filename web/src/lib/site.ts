@@ -23,7 +23,7 @@ export const DEFAULT_TITLE =
 
 /** Under 155 chars — homepage / default description */
 export const DEFAULT_DESCRIPTION =
-  "No extra hardware. Upload menus and promos, hit publish, and every screen updates instantly. 14-day trial, then $25/mo for up to 4 screens.";
+  "No extra hardware. Upload menus and promos, hit publish, and every screen updates instantly. 14-day trial, then $25/mo for up to 2 screens.";
 
 /** Human-facing support address; override with NEXT_PUBLIC_SUPPORT_EMAIL. */
 export function getSupportEmail(): string {

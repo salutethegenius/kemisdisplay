@@ -113,7 +113,7 @@ export default function TwitterImage() {
               opacity: 0.9,
             }}
           >
-            14-day free trial · then $25/mo · up to 4 screens
+            14-day free trial · then $25/mo · up to 2 screens
           </div>
         </div>
 

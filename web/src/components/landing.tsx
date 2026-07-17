@@ -12,10 +12,11 @@ export function Landing() {
           className="flex shrink-0 items-center gap-2 sm:gap-4"
         >
           <Link
-            href="/demo"
-            className="demo-cta-glow whitespace-nowrap rounded-full border border-brand-amber/55 bg-brand-amber/10 px-3 py-2 text-xs font-semibold text-brand-amber transition hover:bg-brand-amber/15 sm:px-4 sm:text-sm"
+            href="/schedule-demo"
+            className="whitespace-nowrap rounded-full border border-brand-amber/55 bg-brand-amber/10 px-3 py-2 text-xs font-semibold text-brand-amber transition hover:bg-brand-amber/15 sm:px-4 sm:text-sm"
           >
-            Live demo
+            <span className="sm:hidden">Demo</span>
+            <span className="hidden sm:inline">Schedule demo</span>
           </Link>
           <Link
             href="/login"
@@ -51,7 +52,7 @@ export function Landing() {
           Then{" "}
           <span className="font-semibold text-brand-cream">$25/month</span> for
           up to{" "}
-          <span className="font-semibold text-brand-cream">4 screens</span>.
+          <span className="font-semibold text-brand-cream">2 screens</span>.
         </p>
         <div className="mt-10 flex flex-wrap gap-4">
           <Link
@@ -61,16 +62,16 @@ export function Landing() {
             Start free trial
           </Link>
           <Link
-            href="/demo"
-            className="demo-cta-glow rounded-full border border-brand-amber/50 bg-brand-amber/10 px-6 py-3 text-sm font-semibold text-brand-amber transition hover:border-brand-amber hover:bg-brand-amber/15"
+            href="/schedule-demo"
+            className="rounded-full border border-brand-amber/50 bg-brand-amber/10 px-6 py-3 text-sm font-semibold text-brand-amber transition hover:border-brand-amber hover:bg-brand-amber/15"
           >
-            See live demo
+            Schedule a demo at your store
           </Link>
           <Link
-            href="/login"
-            className="rounded-full px-6 py-3 text-sm font-medium text-brand-muted transition hover:text-brand-cream"
+            href="/demo"
+            className="demo-cta-glow rounded-full px-6 py-3 text-sm font-medium text-brand-muted transition hover:text-brand-cream"
           >
-            Log in
+            See live demo
           </Link>
         </div>
         <p className="mt-10 max-w-2xl text-sm leading-relaxed text-brand-muted">
@@ -236,7 +237,7 @@ export function Landing() {
               },
               {
                 q: "How many screens can I run?",
-                a: "Up to 4 screens on the Starter plan ($25/mo). Need more? Get in touch and we'll size a plan that fits.",
+                a: "Up to 2 screens on the Starter plan ($25/mo). Need more? Get in touch and we'll size a plan that fits.",
               },
               {
                 q: "Can I use my own videos and images?",
@@ -244,7 +245,7 @@ export function Landing() {
               },
               {
                 q: "How do I cancel?",
-                a: "Cancel any time from your account page. You keep access through the end of the period you've already paid for.",
+                a: "Cancel any time from Manage billing on your account page. You keep access through the end of the period you've already paid for.",
               },
             ].map((item) => (
               <details
@@ -295,7 +296,7 @@ export function Landing() {
             Your screens should work for you, not slow you down.
           </h2>
           <p className="mx-auto mt-4 max-w-lg text-brand-text">
-            Start your free trial and go live today.
+            Start your free trial online, or book a live demo at your store.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-4">
             <Link
@@ -305,16 +306,16 @@ export function Landing() {
               Start free trial
             </Link>
             <Link
-              href="/demo"
-              className="demo-cta-glow rounded-full border border-brand-amber/50 bg-brand-amber/10 px-8 py-3 text-sm font-semibold text-brand-amber transition hover:border-brand-amber hover:bg-brand-amber/15"
+              href="/schedule-demo"
+              className="rounded-full border border-brand-amber/50 bg-brand-amber/10 px-8 py-3 text-sm font-semibold text-brand-amber transition hover:border-brand-amber hover:bg-brand-amber/15"
             >
-              See live demo
+              Schedule a demo at your store
             </Link>
             <Link
-              href="/login"
-              className="rounded-full border border-white/15 px-8 py-3 text-sm font-medium text-brand-cream transition hover:border-brand-amber/40 hover:bg-brand-amber/5"
+              href="/demo"
+              className="demo-cta-glow rounded-full border border-white/15 px-8 py-3 text-sm font-medium text-brand-cream transition hover:border-brand-amber/40 hover:bg-brand-amber/5"
             >
-              Log in
+              See live demo
             </Link>
           </div>
         </section>
