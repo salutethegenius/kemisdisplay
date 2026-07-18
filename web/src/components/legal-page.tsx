@@ -1,6 +1,5 @@
-import Link from "next/link";
-import { BrandLockup } from "@/components/brand-lockup";
 import { MarketingFooter } from "@/components/marketing-footer";
+import { MarketingHeader } from "@/components/marketing-header";
 
 export function LegalPage({
   title,
@@ -15,27 +14,14 @@ export function LegalPage({
 }) {
   return (
     <div className="min-h-screen min-h-[100dvh] bg-gradient-to-b from-brand-deep via-brand-bar to-brand-warm">
-      <header className="mx-auto flex max-w-5xl items-center justify-between gap-2 px-4 pb-6 pt-[max(1rem,env(safe-area-inset-top))] sm:gap-4 sm:px-6">
-        <BrandLockup markSize={36} className="min-w-0 sm:gap-3" href="/" />
-        <nav
-          aria-label="Account"
-          className="flex shrink-0 items-center gap-2 sm:gap-4"
-        >
-          <Link
-            href="/login"
-            className="whitespace-nowrap text-sm text-brand-muted transition hover:text-brand-cream"
-          >
-            Log in
-          </Link>
-          <Link
-            href="/signup"
-            className="rounded-full bg-brand-amber px-3 py-2 text-xs font-semibold text-brand-deep transition hover:bg-brand-amber-bright sm:px-4 sm:text-sm"
-          >
-            <span className="sm:hidden">Start trial</span>
-            <span className="hidden sm:inline">Start free trial</span>
-          </Link>
-        </nav>
-      </header>
+      <MarketingHeader
+        maxWidthClass="max-w-5xl"
+        className="pb-6 pt-[max(1rem,env(safe-area-inset-top))]"
+        links={[
+          { href: "/login", label: "Log in", variant: "text" },
+          { href: "/signup", label: "Start free trial", variant: "primary" },
+        ]}
+      />
 
       <main className="mx-auto max-w-3xl px-4 pb-24 pt-8 sm:px-6 sm:pt-12">
         <p className="text-xs font-semibold uppercase tracking-wide text-brand-amber">
