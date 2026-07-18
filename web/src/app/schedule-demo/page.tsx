@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { BrandLockup } from "@/components/brand-lockup";
 import { MarketingFooter } from "@/components/marketing-footer";
+import { MarketingHeader } from "@/components/marketing-header";
 import { ScheduleDemoForm } from "@/components/schedule-demo-form";
 import { DEFAULT_DESCRIPTION, SITE_NAME, getSiteUrl } from "@/lib/site";
 
@@ -29,26 +29,15 @@ export const metadata: Metadata = {
 export default function ScheduleDemoPage() {
   return (
     <div className="min-h-screen min-h-[100dvh] bg-gradient-to-b from-brand-deep via-brand-bar to-brand-warm">
-      <header className="mx-auto flex max-w-5xl flex-nowrap items-center justify-between gap-2 px-4 pb-6 pt-[max(1rem,env(safe-area-inset-top))] sm:gap-4 sm:px-6">
-        <BrandLockup markSize={36} className="min-w-0 sm:gap-3" href="/" />
-        <nav
-          aria-label="Schedule demo"
-          className="flex shrink-0 items-center gap-2 sm:gap-4"
-        >
-          <Link
-            href="/demo"
-            className="whitespace-nowrap text-sm text-brand-muted transition hover:text-brand-cream"
-          >
-            Live demo
-          </Link>
-          <Link
-            href="/signup"
-            className="rounded-full bg-brand-amber px-3 py-2 text-xs font-semibold text-brand-deep transition hover:bg-brand-amber-bright sm:px-4 sm:text-sm"
-          >
-            Start free trial
-          </Link>
-        </nav>
-      </header>
+      <MarketingHeader
+        navLabel="Schedule demo"
+        maxWidthClass="max-w-5xl"
+        className="pb-6 pt-[max(1rem,env(safe-area-inset-top))]"
+        links={[
+          { href: "/demo", label: "Live demo", variant: "text" },
+          { href: "/signup", label: "Start free trial", variant: "primary" },
+        ]}
+      />
 
       <main className="mx-auto max-w-xl px-4 pb-24 pt-4 sm:px-6 sm:pt-8">
         <h1 className="font-heading text-3xl font-semibold tracking-tight text-brand-cream sm:text-4xl">

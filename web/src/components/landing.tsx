@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { BrandLockup } from "@/components/brand-lockup";
 import { HeroDemoBackdrop } from "@/components/hero-demo-backdrop";
+import { MarketingHeader } from "@/components/marketing-header";
 import { MarketingFooter } from "@/components/marketing-footer";
 import { getLiveDemoDisplayUrl } from "@/lib/site";
 
@@ -21,34 +21,23 @@ export function Landing() {
           aria-hidden
         />
 
-        <header className="relative z-10 mx-auto flex w-full max-w-6xl flex-nowrap items-center justify-between gap-2 px-4 pb-4 pt-[max(1rem,env(safe-area-inset-top))] sm:gap-4 sm:px-6">
-          <BrandLockup markSize={36} className="min-w-0 sm:gap-3" href="/" />
-          <nav
-            aria-label="Account"
-            className="flex shrink-0 items-center gap-2 sm:gap-4"
-          >
-            <Link
-              href="/schedule-demo"
-              className="whitespace-nowrap rounded-full border border-brand-amber/55 bg-brand-deep/40 px-3 py-2 text-xs font-semibold text-brand-amber backdrop-blur-sm transition hover:bg-brand-amber/15 sm:px-4 sm:text-sm"
-            >
-              <span className="sm:hidden">Demo</span>
-              <span className="hidden sm:inline">Schedule demo</span>
-            </Link>
-            <Link
-              href="/login"
-              className="whitespace-nowrap text-sm text-brand-cream/80 transition hover:text-brand-cream"
-            >
-              Log in
-            </Link>
-            <Link
-              href="/signup"
-              className="rounded-full bg-brand-amber px-3 py-2 text-xs font-semibold text-brand-deep transition hover:bg-brand-amber-bright sm:px-4 sm:text-sm"
-            >
-              <span className="sm:hidden">Start trial</span>
-              <span className="hidden sm:inline">Start free trial</span>
-            </Link>
-          </nav>
-        </header>
+        <MarketingHeader
+          tone="hero"
+          className="pb-4 pt-[max(1rem,env(safe-area-inset-top))]"
+          links={[
+            {
+              href: "/schedule-demo",
+              label: "Schedule demo",
+              variant: "outline",
+            },
+            { href: "/login", label: "Log in", variant: "text" },
+            {
+              href: "/signup",
+              label: "Start free trial",
+              variant: "primary",
+            },
+          ]}
+        />
 
         <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-1 flex-col justify-end px-4 pb-16 pt-10 sm:px-6 sm:pb-20 sm:pt-16">
           <div className="hero-overlay-in max-w-3xl">

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { BrandLockup } from "@/components/brand-lockup";
 import { DemoLiveTv } from "@/components/demo-live-tv";
+import { MarketingHeader } from "@/components/marketing-header";
 import { MarketingFooter } from "@/components/marketing-footer";
 import { DEFAULT_DESCRIPTION, SITE_NAME, getLiveDemoDisplayUrl, getSiteUrl } from "@/lib/site";
 
@@ -30,32 +30,17 @@ export default function DemoPage() {
 
   return (
     <div className="min-h-screen min-h-[100dvh] overflow-x-hidden bg-gradient-to-b from-brand-deep via-brand-bar to-brand-warm">
-      <header className="mx-auto flex max-w-[min(100vw-1rem,1920px)] flex-nowrap items-center justify-between gap-2 px-3 pb-2 pt-[max(0.75rem,env(safe-area-inset-top))] sm:gap-4 sm:px-6">
-        <BrandLockup markSize={32} className="min-w-0 sm:gap-3" href="/" />
-        <nav
-          aria-label="Demo"
-          className="flex shrink-0 items-center gap-1.5 sm:gap-4"
-        >
-          <Link
-            href="/"
-            className="whitespace-nowrap py-2 text-xs text-brand-muted transition hover:text-brand-cream sm:text-sm"
-          >
-            Home
-          </Link>
-          <Link
-            href="/login"
-            className="whitespace-nowrap py-2 text-xs text-brand-muted transition hover:text-brand-cream sm:text-sm"
-          >
-            Log in
-          </Link>
-          <Link
-            href="/signup"
-            className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-brand-amber px-3 py-2 text-[11px] font-semibold leading-tight text-brand-deep transition hover:bg-brand-amber-bright sm:min-h-0 sm:min-w-0 sm:px-4 sm:text-sm"
-          >
-            Start free trial
-          </Link>
-        </nav>
-      </header>
+      <MarketingHeader
+        navLabel="Demo"
+        markSize={32}
+        maxWidthClass="max-w-[min(100vw-1rem,1920px)]"
+        className="px-3 pb-2 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-6"
+        links={[
+          { href: "/", label: "Home", variant: "text" },
+          { href: "/login", label: "Log in", variant: "text" },
+          { href: "/signup", label: "Start free trial", variant: "primary" },
+        ]}
+      />
 
       <main className="mx-auto w-full max-w-[min(100vw-1rem,1920px)] px-3 pb-[max(3.5rem,env(safe-area-inset-bottom))] pt-2 sm:px-6 sm:pb-16 sm:pt-4">
         <h1 className="text-center font-heading text-[clamp(1.65rem,5.5vw,2.25rem)] font-bold leading-[1.15] tracking-tight text-brand-amber sm:text-5xl md:text-6xl sm:leading-tight">
