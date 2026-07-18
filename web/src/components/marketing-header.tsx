@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useId, useState } from "react";
+import { createPortal } from "react-dom";
 import { BrandLockup } from "@/components/brand-lockup";
 
 export type MarketingNavLink = {
@@ -91,7 +92,12 @@ export function MarketingHeader({
   maxWidthClass = "max-w-6xl",
 }: MarketingHeaderProps) {
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const menuId = useId();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -110,9 +116,59 @@ export function MarketingHeader({
     };
   }, [open]);
 
+  const mobileMenu =
+    open && mounted
+      ? createPortal(
+          <div className="md:hidden">
+            <button
+              type="button"
+              className="fixed inset-0 z-[100] bg-brand-deep/85 backdrop-blur-sm"
+              aria-label="Close menu"
+              onClick={() => setOpen(false)}
+            />
+            <nav
+              id={menuId}
+              aria-label={navLabel}
+              className="fixed inset-y-0 right-0 z-[110] flex w-[min(85vw,20rem)] flex-col border-l border-white/10 bg-brand-deep p-6 shadow-2xl shadow-black/50"
+              style={{
+                paddingTop: "max(1rem, env(safe-area-inset-top))",
+                paddingBottom: "max(1rem, env(safe-area-inset-bottom))",
+              }}
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-semibold uppercase tracking-wide text-brand-muted">
+                  Menu
+                </span>
+                <button
+                  type="button"
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-brand-cream transition hover:bg-white/5"
+                  aria-label="Close menu"
+                  onClick={() => setOpen(false)}
+                >
+                  <MenuIcon open />
+                </button>
+              </div>
+              <div className="mt-8 flex flex-col gap-3">
+                {links.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    onClick={() => setOpen(false)}
+                    className={mobileLinkClassName(link.variant, tone)}
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
+            </nav>
+          </div>,
+          document.body,
+        )
+      : null;
+
   return (
     <header
-      className={`relative z-10 mx-auto flex w-full items-center justify-between gap-2 px-4 sm:gap-4 sm:px-6 ${maxWidthClass} ${className}`}
+      className={`relative z-20 mx-auto flex w-full items-center justify-between gap-2 px-4 sm:gap-4 sm:px-6 ${maxWidthClass} ${className}`}
     >
       <BrandLockup markSize={markSize} className="min-w-0 sm:gap-3" href="/" />
 
@@ -142,51 +198,7 @@ export function MarketingHeader({
         <MenuIcon open={open} />
       </button>
 
-      {open && (
-        <>
-          <button
-            type="button"
-            className="fixed inset-0 z-40 bg-brand-deep/70 backdrop-blur-sm md:hidden"
-            aria-label="Close menu"
-            onClick={() => setOpen(false)}
-          />
-          <nav
-            id={menuId}
-            aria-label={navLabel}
-            className="fixed right-0 top-0 z-50 flex h-full w-[min(85vw,20rem)] flex-col border-l border-white/10 bg-brand-deep p-6 shadow-2xl shadow-black/40 md:hidden"
-            style={{
-              paddingTop: "max(1rem, env(safe-area-inset-top))",
-              paddingBottom: "max(1rem, env(safe-area-inset-bottom))",
-            }}
-          >
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-semibold uppercase tracking-wide text-brand-muted">
-                Menu
-              </span>
-              <button
-                type="button"
-                className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-brand-cream transition hover:bg-white/5"
-                aria-label="Close menu"
-                onClick={() => setOpen(false)}
-              >
-                <MenuIcon open />
-              </button>
-            </div>
-            <div className="mt-8 flex flex-col gap-3">
-              {links.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  onClick={() => setOpen(false)}
-                  className={mobileLinkClassName(link.variant, tone)}
-                >
-                  {link.label}
-                </Link>
-              ))}
-            </div>
-          </nav>
-        </>
-      )}
+      {mobileMenu}
     </header>
   );
 }
