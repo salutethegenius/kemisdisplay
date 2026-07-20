@@ -1306,21 +1306,35 @@ function AccountPage() {
           <br />
           {user?.plan} · effective tier: {user?.effective_tier ?? "none"}
         </p>
-        <p>
-          <span className="text-brand-muted">Trial ends</span>
-          <br />
-          {user?.trial_ends_at
-            ? new Date(user.trial_ends_at).toLocaleString()
-            : "—"}
-        </p>
+        {user?.plan === "comp" ? (
+          <p>
+            <span className="text-brand-muted">Access</span>
+            <br />
+            Complimentary — free for life
+          </p>
+        ) : (
+          <p>
+            <span className="text-brand-muted">Trial ends</span>
+            <br />
+            {user?.trial_ends_at
+              ? new Date(user.trial_ends_at).toLocaleString()
+              : "—"}
+          </p>
+        )}
 
         <div className="border-t border-white/10 pt-4">
           <p className="text-brand-muted">Billing</p>
-          <p className="mt-1 text-brand-cream">
-            Starter is <span className="font-semibold">$25/month</span> for up to{" "}
-            <span className="font-semibold">2 screens</span>. Cancel anytime from
-            Manage billing.
-          </p>
+          {user?.plan === "comp" ? (
+            <p className="mt-1 text-brand-cream">
+              Your account has complimentary access — no subscription needed.
+            </p>
+          ) : (
+            <p className="mt-1 text-brand-cream">
+              Starter is <span className="font-semibold">$25/month</span> for up to{" "}
+              <span className="font-semibold">2 screens</span>. Cancel anytime from
+              Manage billing.
+            </p>
+          )}
           {billingStatus === "success" && (
             <p className="mt-2 text-sm text-brand-amber">
               Payment received. Your Starter plan will activate in a moment — refresh
