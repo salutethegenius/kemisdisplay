@@ -87,6 +87,11 @@ def create_checkout(
     db: Session = Depends(get_db),
 ) -> BillingUrlOut:
     _require_stripe()
+    if user.plan == "comp":
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST,
+            "This account has complimentary access and cannot subscribe.",
+        )
     if user.plan in ("starter", "pro", "business"):
         raise HTTPException(
             status.HTTP_400_BAD_REQUEST,
