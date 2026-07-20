@@ -12,7 +12,7 @@ from app.services.limits import effective_tier
 
 router = APIRouter()
 
-ALLOWED_PLANS = frozenset({"trialing", "starter", "pro", "business"})
+ALLOWED_PLANS = frozenset({"trialing", "starter", "pro", "business", "comp"})
 
 
 @router.get("/users", response_model=list[AdminUserRow])

@@ -138,7 +138,7 @@ class AdminUserUpdate(BaseModel):
     def plan_values(cls, v: str | None) -> str | None:
         if v is None:
             return v
-        allowed = {"trialing", "starter", "pro", "business"}
+        allowed = {"trialing", "starter", "pro", "business", "comp"}
         if v not in allowed:
             raise ValueError(f"plan must be one of: {', '.join(sorted(allowed))}")
         return v

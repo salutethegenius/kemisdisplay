@@ -15,6 +15,9 @@ STORAGE_BYTES = {"starter": 1 << 30, "pro": 5 << 30, "business": 20 << 30}
 def effective_tier(user: User) -> str | None:
     if settings.dev_bypass_billing:
         return "business"
+    if user.plan == "comp":
+        # Complimentary / free-for-life accounts get starter-tier access (2 screens, 1 GiB).
+        return "starter"
     now = datetime.now(timezone.utc)
     te = user.trial_ends_at
     if te.tzinfo is None:

@@ -1111,7 +1111,7 @@ function AdminUsers() {
                   }
                   className="mt-1 w-full rounded-lg border border-white/10 bg-brand-deep px-3 py-2 text-sm text-brand-cream"
                 >
-                  {["trialing", "starter", "pro", "business"].map((p) => (
+                  {["trialing", "starter", "pro", "business", "comp"].map((p) => (
                     <option key={p} value={p}>
                       {p}
                     </option>
@@ -1205,7 +1205,7 @@ function AccountPage() {
     setBillingStatus(value);
   }, []);
 
-  const isPaid = ["starter", "pro", "business"].includes(user?.plan ?? "");
+  const isPaid = ["starter", "pro", "business", "comp"].includes(user?.plan ?? "");
   const trialExpired =
     Boolean(user?.trial_ends_at) &&
     new Date(user!.trial_ends_at).getTime() < Date.now() &&
@@ -1350,7 +1350,7 @@ function AccountPage() {
                   : "Subscribe — $25/mo"}
               </button>
             )}
-            {(user?.has_billing_customer || isPaid) && (
+            {user?.has_billing_customer && (
               <button
                 type="button"
                 disabled={billingBusy !== null}
